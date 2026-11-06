@@ -1,0 +1,45 @@
+/* =========================================
+   POPUP DE DÉTECTION D'AUTOCLICKER
+   ========================================= */
+#autoclicker-popup {
+    display: none; /* Affiché dynamiquement en cas de détection */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(10, 8, 7, 0.95);
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+}
+
+.autoclicker-box {
+    border-color: #ff5555;
+    box-shadow: 0 10px 35px rgba(255, 85, 85, 0.4);
+    max-width: 420px;
+    padding: 25px;
+}
+
+.autoclicker-title {
+    color: #ff5555;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.autoclicker-text {
+    font-size: 0.9rem;
+    color: #a0aec0;
+    margin-bottom: 20px;
+}
+
+.turnstile-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#btn-close-autoclicker {
+    background: linear-gradient(180deg, #b33227 0%, #7a211a 100%);
+    border-color: #ff5555;
+}

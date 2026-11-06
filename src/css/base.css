@@ -1,0 +1,65 @@
+/* =========================================
+   VARIABLES DU THÈME CHRONOS
+   ========================================= */
+:root {
+    --copper-light: #d97b48;
+    --copper-main: #b85d19;
+    --copper-dark: #7a3a0d;
+    --brass: #c5a059;
+    --text-main: #e8dcc4;
+    --text-dark: #1a1614;
+
+    /* Effet verre fumé (Glassmorphism) */
+    --panel-glass-light: rgba(30, 25, 22, 0.75);
+    --panel-glass-dark: rgba(15, 12, 10, 0.85);
+    --panel-border: rgba(197, 160, 89, 0.25);
+
+    --font-title: 'Cinzel', serif;
+    --font-text: 'Roboto', sans-serif;
+    --font-mono: 'Courier Prime', monospace;
+}
+
+/* =========================================
+   RESETS & CONFIGURATION DE BASE
+   ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: #0f0c0a; /* Fond sombre de secours */
+    color: var(--text-main);
+    font-family: var(--font-text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Image de fond statique */
+#site-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -1;
+    pointer-events: none;
+}
+
+h1, h2, h3, h4, .phase-name, .upgrade-title {
+    font-family: var(--font-title);
+    letter-spacing: 1px;
+}
+
+/* Classe utilitaire d'effet verre fumé */
+.glass-panel {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}

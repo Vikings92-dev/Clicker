@@ -1,0 +1,15 @@
+/* =========================================
+   ÉCRAN D'INVENTAIRE
+   ========================================= */
+#inventory-screen {
+    display: none; /* Affiché dynamiquement à la demande */
+}
+
+.inventory-box {
+    border-color: #e07809;
+    box-shadow: 0 10px 35px #ffb86c;
+}
+
+.inventory-title {
+    color: #e07809;
+}

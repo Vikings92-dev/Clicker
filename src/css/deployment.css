@@ -1,0 +1,105 @@
+/* =========================================
+   POPUP DE DÉPLOIEMENT DES DRILLS
+   ========================================= */
+
+#deployment-modal {
+    display: none; /* Affiché dynamiquement via JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 8, 7, 0.88);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.deployment-box {
+    max-width: 650px;
+    width: 92%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    padding: 22px;
+}
+
+#deployment-modal-title {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--brass, #c5a059);
+}
+
+.deployment-subtitle {
+    font-size: 0.85rem;
+    color: #a0aec0;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.deployment-actions-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+#deployment-drills-grid {
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.deployment-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+#deployment-selected-count {
+    font-size: 0.9rem;
+    color: #cbd5e0;
+}
+
+.deployment-buttons-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* Cartes carrées de sélection de Drills */
+.drill-select-card {
+    aspect-ratio: 1 / 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.drill-select-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(197, 160, 89, 0.5);
+}
+
+.drill-select-card.selected {
+    background: rgba(197, 160, 89, 0.18);
+    border-color: #c5a059;
+    box-shadow: 0 0 12px rgba(197, 160, 89, 0.45), inset 0 0 8px rgba(197, 160, 89, 0.2);
+    transform: scale(0.98);
+}

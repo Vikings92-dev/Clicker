@@ -1,0 +1,100 @@
+/* =========================================
+   PANNEAU GAUCHE : CLIC MANUEL & PIOCHE
+   ========================================= */
+.left-panel {
+    width: 35%;
+    background-color: var(--panel-glass-dark);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-right: 2px solid var(--copper-dark);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.7);
+    z-index: 2;
+}
+
+.header {
+    text-align: center;
+    width: 100%;
+}
+
+.header h1 {
+    color: var(--copper-light);
+    font-size: 2.2rem;
+    text-shadow: 0 0 12px rgba(217, 123, 72, 0.4);
+    margin-bottom: 5px;
+    border-bottom: 2px solid var(--brass);
+    padding-bottom: 10px;
+}
+
+.stats-container {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 15px;
+    border: 1px solid var(--panel-border);
+    text-align: center;
+}
+
+.money-display {
+    font-family: var(--font-mono);
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--brass);
+    text-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
+    margin-top: 5px;
+}
+
+#mps {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #a9a9b2;
+    margin-top: 4px;
+}
+
+/* Zone du gros bouton de clic */
+.click-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.click-button {
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--copper-light) 0%, var(--copper-dark) 100%);
+    border: 6px solid var(--brass);
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.2);
+    transition: transform 0.05s, box-shadow 0.1s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: var(--font-title);
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: var(--text-main);
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.9);
+}
+
+.click-button:active {
+    transform: scale(0.96);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+
+.upgrade-section {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+}

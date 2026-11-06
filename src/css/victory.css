@@ -1,0 +1,22 @@
+/* =========================================
+   ÉCRAN DE VICTOIRE
+   ========================================= */
+#victory-screen {
+    display: none; /* Affiché dynamiquement en fin de partie */
+}
+
+.victory-box {
+    border-color: #50fa7b;
+    box-shadow: 0 10px 35px rgba(80, 250, 123, 0.4);
+}
+
+.victory-title {
+    color: #50fa7b;
+}
+
+#final-money {
+    font-size: 1.2rem;
+    color: #ffb86c;
+    font-weight: bold;
+    margin: 15px 0;
+}

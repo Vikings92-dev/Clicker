@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copper Clicker</title>
+
+    <!-- Styles de base -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+
+    <!-- Styles de mise en page -->
+    <link rel="stylesheet" href="css/left-panel.css">
+    <link rel="stylesheet" href="css/right-panel.css">
+
+    <!-- Styles des écrans et popups -->
+    <link rel="stylesheet" href="css/screens.css">
+    <link rel="stylesheet" href="css/victory.css">
+    <link rel="stylesheet" href="css/inventory.css">
+    <link rel="stylesheet" href="css/autoclicker.css">
+    <link rel="stylesheet" href="css/deployment.css">
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+
+    <!-- Écran de victoire -->
+    <div id="victory-screen" class="screen-overlay">
+        <div class="login-box victory-box">
+            <h2 class="victory-title">🏆 FÉLICITATIONS !</h2>
+            <p>Vous avez atteint la limite absolue de richesse du jeu !</p>
+            <p id="final-money"></p>
+            <p>Toute l'économie mondiale est sous votre contrôle. Votre empire minier est achevé.</p>
+        </div>
+    </div>
+
+    <!-- Écran d'inventaire -->
+    <div id="inventory-screen" class="screen-overlay">
+        <div class="login-box inventory-box">
+            <h2 class="inventory-title">Inventaire des drills</h2>
+            <p>Bienvenue dans l'interface d'inventaire de vos drills</p>
+        </div>
+    </div>
+
+    <!-- Popup d'alerte CPS / Auto-clicker -->
+    <div id="autoclicker-popup">
+        <div class="login-box autoclicker-box">
+            <h2 class="autoclicker-title">Autoclicker détecté !</h2>
+            <p class="autoclicker-text">Veuillez désactiver tout outil d'automatisation ou modérer vos clics pour continuer.</p>
+            <p class="autoclicker-text">Vérification requise pour prouver que vous n'êtes pas un robot.</p>
+
+            <div class="turnstile-wrapper">
+                <div id="cf-turnstile-container" class="cf-turnstile" data-sitekey="0x4AAAAAAFzyK8F-cDOxCoKN" data-callback="onTurnstileSuccess"></div>
+            </div>
+            <button id="btn-close-autoclicker" class="btn" disabled onclick="closeAutoclickerPopup()">
+                Vérification requise...
+            </button>
+        </div>
+    </div>
+
+    <!-- Écran de connexion -->
+    <div id="login-screen" class="screen-overlay">
+        <div class="login-box">
+            <h2>Copper Clicker</h2>
+            <p>Entrez votre pseudonyme pour jouer :</p>
+            <input type="text" id="username-input" placeholder="Ex: MineurFou" maxlength="20" autocomplete="off">
+            <button class="btn" id="login-btn">Rejoindre la mine</button>
+        </div>
+    </div>
+
+    <!-- Écran de déployement de drills -->
+    <div id="deployment-modal">
+        <div class="login-box glass-panel deployment-box">
+            <h3 id="deployment-modal-title">Déployer des Drills</h3>
+            <p class="deployment-subtitle">Cliquez sur les cartes pour les sélectionner ou utilisez les boutons rapides.</p>
+            
+            <div class="deployment-actions-bar">
+                <button type="button" class="btn-mini" onclick="toggleSelectAllCardDrills(true)">Tout sélectionner</button>
+                <button type="button" class="btn-mini" onclick="toggleSelectAllCardDrills(false)">Tout désélectionner</button>
+            </div>
+
+            <div id="deployment-drills-grid">
+                <!-- Injecté dynamiquement en JS -->
+            </div>
+
+            <div class="deployment-footer">
+                <span id="deployment-selected-count">0 drill(s) sélectionnée(s)</span>
+                <div class="deployment-buttons-group">
+                    <button type="button" class="btn-mini" onclick="closeDeploymentModal()">Annuler</button>
+                    <button type="button" class="btn btn-action-deploy" onclick="confirmDeploySelectedDrills()">Déployer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran de Magasin -->
+    <div id="shop-modal" class="screen-overlay" style="display: none;">
+        <div class="login-box glass-panel shop-box">
+            <div class="shop-header">
+                <h2 class="shop-title">🏪 Magasin Général</h2>
+                <button type="button" class="btn-mini shop-close-btn" onclick="closeShopModal()">✕</button>
+            </div>
+
+            <div class="shop-content-scroll">
+                <!-- SECTION 1 : DRILLS & FORAGES -->
+                <div class="shop-section">
+                    <h3 class="shop-section-title">Foreuses & Technologies</h3>
+                    
+                    <div class="shop-item-card">
+                        <div class="shop-item-info">
+                            <div class="upgrade-title" id="drill-shop-title">Modèle : Drill en Bois</div>
+                            <div class="shop-item-desc">Acheter une unité prête à être déployée ou stockée.</div>
+                        </div>
+                        <button class="btn drill-shop-btn" id="buy-drill-global-btn">
+                            Acheter (<span id="drill-shop-cost">0</span> $)
+                        </button>
+                    </div>
+
+                    <div class="shop-item-card research-panel">
+                        <div class="shop-item-info">
+                            <div class="upgrade-title">R&D : Palier Technologique</div>
+                            <div class="research-next-level" id="research-next-level">Suivant : Drill en Pierre</div>
+                        </div>
+                        <button class="btn research-btn" id="research-drill-btn">
+                            🔬 Lancer Recherche<br>
+                            <span id="research-cost">0</span> $ (<span id="research-chance">0</span>% chance)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECTION 2 : KIT DE RÉPARATION -->
+                <div class="shop-item-card">
+                    <div class="shop-item-info">
+                        <div class="upgrade-title">Kit Caisse à outils</div>
+                        <div class="shop-item-desc">Remet en service une drill en panne.</div>
+                    </div>
+                    <button class="btn" id="buy-repair-kit-btn">
+                        Acheter (<span id="repair-kit-cost">1500</span> $)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANNEAU GAUCHE : CLIC & PIOCHE -->
+    <div class="left-panel">
+        <div class="header">
+            <h1>Copper Clicker</h1>
+            <div class="stats-container">
+                <div>Argent Global</div>
+                <div class="money-display" id="money">0.00 $</div>
+                <div id="mps">Revenu passif : 0.00 $/s</div>
+            </div>
+        </div>
+
+        <div class="click-area">
+            <button class="click-button" id="click-btn">MINER !</button>
+        </div>
+
+        <div class="upgrade-section">
+            <div class="upgrade-title" id="pickaxe-title">Pioche : Bois</div>
+            <button class="btn" id="upgrade-pickaxe-btn">Améliorer Pioche (Coût: 15 $)</button>
+        </div>
+    </div>
+
+    <!-- PANNEAU DROITE : COIN DRILLS & PHASES -->
+    <div class="right-panel">
+        <div class="section-title">Hangar à Drills (Inventaire, R&D & Réparation)</div>
+        <div class="hangar-container">
+            <div class="hangar-shop hangar-shop--divided">
+                <button class="btn drill-shop-btn" id="open-shop-btn">
+                    🏪 Ouvrir le Magasin
+                </button>
+            </div>
+
+            <div class="hangar-inventory">
+                <div class="inventory-label">Drills en Stock (Régénération passive) :</div>
+                <div id="inventory-container" class="inventory-list"></div>
+            </div>
+        </div>
+
+        <div class="section-title section-title--spaced">Phases d'Extraction (Drills Déployés)</div>
+        <div id="phases-container"></div>
+    </div>
+
+    <script src="js/state.js"></script>
+    <script src="js/function.js"></script>
+    <script src="js/passive.js"></script>
+    <script src="js/backend.js"></script>
+    <script src="js/button.js"></script>
+    <script src="js/loop.js"></script>
+</body>
+</html>
