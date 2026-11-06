@@ -1,4 +1,12 @@
+let lastClickTimestampForInterval = 0;
+let lastIntervalMs = 0;
+let streakDurationAccumulatorMs = 0;
+
+const INTERVAL_TOLERANCE_MS = 2; // Tolérance de 2ms
+const REQUIRED_STREAK_DURATION_MS = 10000;
+
 setInterval(() => {
+    // 1. Détection cadence brute excessive (> 15 CPS pendant 5 sec)
     if (rawClickCount > 15) {
         overLimitSecondsStreak++;
         console.warn(`CPS au-dessus de la limite (${rawClickCount} CPS) : ${overLimitSecondsStreak}/5 sec`);
@@ -11,6 +19,7 @@ setInterval(() => {
         overLimitSecondsStreak = 0;
     }
 
+    // 2. Mise à jour de l'affichage sur le bouton
     if (clickBtn) {
         clickBtn.innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
@@ -32,13 +41,48 @@ clickBtn.addEventListener('click', () => {
     rawClickCount++;
 
     const now = performance.now();
+
+    // 1. Mesure de l'écart en ms entre chaque clic (détection autoclicker 10 sec)
+    if (lastClickTimestampForInterval > 0) {
+        const deltaMs = now - lastClickTimestampForInterval;
+
+        if (lastIntervalMs > 0 && Math.abs(deltaMs - lastIntervalMs) <= INTERVAL_TOLERANCE_MS) {
+            streakDurationAccumulatorMs += deltaMs;
+
+            if (streakDurationAccumulatorMs >= REQUIRED_STREAK_DURATION_MS) {
+                console.warn(`Autoclicker détecté : intervalle de ~${Math.round(lastIntervalMs)}ms stable pendant 10s !`);
+                triggerAutoclickerAlert();
+                streakDurationAccumulatorMs = 0;
+                lastIntervalMs = 0;
+            }
+        } else {
+            // Variation temporelle normale d'un humain : réinitialisation de la série
+            streakDurationAccumulatorMs = 0;
+            console.log(`Intervalle de clics varié : ${Math.round(deltaMs)}ms (dernier intervalle : ${Math.round(lastIntervalMs)}ms)`);
+        }
+
+        lastIntervalMs = deltaMs;
+    }
+
+    lastClickTimestampForInterval = now;
+
+    // 2. Limite mécanique anti-spam (interdit de cliquer plus vite que 15 CPS)
     if (now - lastValidClickTimestamp < MIN_CLICK_INTERVAL_MS) {
         return;
     }
     lastValidClickTimestamp = now;
 
     validClicksThisSecond++;
-    game.money += game.pickaxePower[game.pickaxeTier];
+
+    // Multiplicateur temporaire (si actif via js/events.js)
+    const currentMultiplier = (typeof getClickMultiplier === 'function') ? getClickMultiplier() : 1;
+    game.money += game.pickaxePower[game.pickaxeTier] * currentMultiplier;
+
+    // Test de l'événement aléatoire (1 chance sur 500 clics valides)
+    if (typeof checkRandomClickEvent === 'function') {
+        checkRandomClickEvent();
+    }
+
     updateUI();
 });
 

@@ -478,6 +478,11 @@ function closeAutoclickerPopup() {
         popup.style.display = 'none';
     }
     isSuspendedByCaptcha = false;
+    overLimitSecondsStreak = 0;
+    lastClickTimestampForInterval = 0;
+    lastIntervalMs = 0;
+    consecutiveIdenticalIntervals = 0;
+    streakDurationAccumulatorMs = 0;
 }
 window.closeAutoclickerPopup = closeAutoclickerPopup;
 
