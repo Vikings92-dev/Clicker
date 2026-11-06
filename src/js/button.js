@@ -73,7 +73,8 @@ buyDrillGlobalBtn.addEventListener('click', async () => {
             dura: template.maxDura,
             elec: template.maxElec,
             perteDura: template.pourcentagePerteDura,
-            resistance: template.resistance
+            resistance: template.resistance,
+            isHS: template.isHS
         });
         updateUI();
         await saveGameToServer();
@@ -106,4 +107,61 @@ researchDrillBtn.addEventListener('click', async () => {
 const openShopBtn = document.getElementById('open-shop-btn');
 if (openShopBtn) {
     openShopBtn.addEventListener('click', openShopModal);
+}
+
+if (buyKitQtyInput) {
+    buyKitQtyInput.addEventListener('input', () => {
+        if (buyKitQtyInput.value < 1) buyKitQtyInput.value = 1;
+        updateCosts();
+    });
+}
+
+if (buyKitBtn) {
+    buyKitBtn.addEventListener('click', async () => {
+        if (isGameFinished || isPurchaseOnCooldown) return;
+
+        const qty = Math.max(1, parseInt(buyKitQtyInput.value) || 1);
+        const totalCost = (game.kitCost || 5000) * qty;
+
+        if (game.money >= totalCost) {
+            game.money -= totalCost;
+            game.repairKits = (game.repairKits || 0) + qty;
+
+            triggerPurchaseCooldown();
+            updateUI();
+            updateCosts();
+            await saveGameToServer();
+        }
+    });
+}
+
+const openRepairBtn = document.getElementById('open-repair-btn');
+if (openRepairBtn) {
+    openRepairBtn.addEventListener('click', openRepairModal);
+}
+
+if (buyMatQtyInput) {
+    buyMatQtyInput.addEventListener('input', () => {
+        if (buyMatQtyInput.value < 1) buyMatQtyInput.value = 1;
+        updateCosts();
+    });
+}
+
+if (buyMatBtn) {
+    buyMatBtn.addEventListener('click', async () => {
+        if (isGameFinished || isPurchaseOnCooldown) return;
+
+        const qty = Math.max(1, parseInt(buyMatQtyInput.value) || 1);
+        const totalCost = (game.matCost || 500) * qty;
+
+        if (game.money >= totalCost) {
+            game.money -= totalCost;
+            game.repairMetariaux = (game.repairMetariaux || 0) + qty;
+
+            triggerPurchaseCooldown();
+            updateUI();
+            updateCosts();
+            await saveGameToServer();
+        }
+    });
 }

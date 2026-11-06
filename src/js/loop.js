@@ -22,9 +22,19 @@ setInterval(() => {
             let totalSpeed = 0;
 
             p.activeDrills.forEach(d => {
-                if (d.elec <= 0) {
+                if (d.isHS || d.elec <= 0) {
                     noElecDrill++;
                     return;
+                }
+
+                if (isOneSecondTick) {
+                    const failRoll = Math.random() * 600; // env toute les 10 minutes
+                    if (failRoll < 1) {
+                        d.isHS = true;
+                        alert(`💥 Votre ${d.name} est HS ! Il ne peut plus être utilisé jusqu'à réparation.`);
+                        noElecDrill++;
+                        return;
+                    }
                 }
 
                 d.elec -= 1 * dt;
@@ -60,7 +70,7 @@ setInterval(() => {
             const averagePower = totalEffectivePower / activeDrillsCount;
             const averageSpeed = totalSpeed / activeDrillsCount;
             const rawProgressIncrement = ((averagePower * averageSpeed) / p.baseResist) * 100 * dt;
-            const maxProgressPerTick = (100 / 0.5) * dt;
+            const maxProgressPerTick = 100
             p.progress += Math.min(rawProgressIncrement, maxProgressPerTick);
 
             if (p.progress >= 100) {

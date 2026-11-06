@@ -20,6 +20,8 @@ async function loadGameFromServer() {
             game.unlockedDrillTier = savedGame.unlockedDrillTier ?? 0;
             game.drillCounterId = savedGame.drillCounterId ?? 0;
             game.inventory = savedGame.inventory ?? [];
+            game.repairKits = savedGame.repairKits ?? 0;
+            game.repairMetariaux = savedGame.repairMetariaux ?? 0;
 
             if (Array.isArray(savedGame.phases)) {
                 game.phases.forEach(localPhase => {

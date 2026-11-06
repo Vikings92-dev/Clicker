@@ -9,25 +9,30 @@ let game = {
     pickaxeCosts: [150, 650, 2800, 12000, 55000, 250000, 1200000],
 
     unlockedDrillTier: 0, 
-    drillCounterId: 0, 
+    drillCounterId: 0,
     inventory: [],
 
     researchCosts: [35000, 250000, 1800000, 15000000],
     researchChances: [80, 55, 35, 15],
     
+    kitCost: 5000,
+    repairKits: 0,
+    matCost: 500,
+    repairMetariaux: 0,
+
     drillTemplates: [
-        { tier: 0, name: "Drill en Prismaline", speed: 1.5, power: 10, pourcentagePerteDura: 20, resistance: 200, maxDura: 300, maxElec: 300, regen: 2.0, costBase: 8500 },
-        { tier: 1, name: "Drill en Véridite", speed: 2.0, power: 35, pourcentagePerteDura: 30, resistance: 550, maxDura: 450, maxElec: 400, regen: 3.5, costBase: 60000 },
-        { tier: 2, name: "Drill en Bracium", speed: 2.5, power: 120, pourcentagePerteDura: 40, resistance: 2500, maxDura: 750, maxElec: 500, regen: 6.0, costBase: 450000 },
-        { tier: 3, name: "Drill en Azula", speed: 3.5, power: 450, pourcentagePerteDura: 50, resistance: 10000, maxDura: 1200, maxElec: 600, regen: 11.0, costBase: 3500000 },
-        { tier: 4, name: "Drill en Aetheris", speed: 5.0, power: 2500, pourcentagePerteDura: 60, resistance: 32000, maxDura: 2500, maxElec: 700, regen: 22.0, costBase: 30000000 }
+        { tier: 0, name: "Drill en Prismaline", speed: 1.5, power: 10, pourcentagePerteDura: 20, resistance: 200, maxDura: 300, maxElec: 300, regen: 2.0, costBase: 8500, repairChance: 80, isHS: false },
+        { tier: 1, name: "Drill en Véridite", speed: 2.0, power: 35, pourcentagePerteDura: 30, resistance: 550, maxDura: 450, maxElec: 400, regen: 3.5, costBase: 60000, repairChance: 60, isHS: false },
+        { tier: 2, name: "Drill en Bracium", speed: 2.5, power: 120, pourcentagePerteDura: 40, resistance: 2500, maxDura: 750, maxElec: 500, regen: 6.0, costBase: 450000, repairChance: 40, isHS: false },
+        { tier: 3, name: "Drill en Azula", speed: 3.5, power: 450, pourcentagePerteDura: 50, resistance: 10000, maxDura: 1200, maxElec: 600, regen: 11.0, costBase: 3500000, repairChance: 20, isHS: false },
+        { tier: 4, name: "Drill en Aetheris", speed: 5.0, power: 2500, pourcentagePerteDura: 60, resistance: 32000, maxDura: 2500, maxElec: 700, regen: 22.0, costBase: 30000000, repairChance: 10, isHS: false }
     ],
 
     paliers: [
-        { id: 1, name: "Stone", displayName: "Phase 1 - Palier : Dead Coral Block", bgImage: "/public/stone.png", ajoutReward: 0, nbBlock: 0 },
-        { id: 2, name: "Deepslate", displayName: "Phase 1 - Palier : Stone", bgImage: "/public/deepslate.png", ajoutReward: 1, nbBlock: 100 },
-        { id: 3, name: "Obsidienne", displayName: "Phase 1 - Palier : Cobblestone", bgImage: "/public/obsidian.png", ajoutReward: 2, nbBlock: 250 },
-        { id: 4, name: "Endstone", displayName: "Phase 1 - Palier : Deepslate", bgImage: "/public/end_stone.png", ajoutReward: 4, nbBlock: 500 }
+        { id: 1, name: "Dead Coral Block", displayName: "Phase 1 - Palier : Dead Coral Block", bgImage: "/public/stone.png", ajoutReward: 0, nbBlock: 0 },
+        { id: 2, name: "Stone", displayName: "Phase 1 - Palier : Stone", bgImage: "/public/deepslate.png", ajoutReward: 1, nbBlock: 100 },
+        { id: 3, name: "Cobblestone", displayName: "Phase 1 - Palier : Cobblestone", bgImage: "/public/obsidian.png", ajoutReward: 2, nbBlock: 250 },
+        { id: 4, name: "Deepslate", displayName: "Phase 1 - Palier : Deepslate", bgImage: "/public/end_stone.png", ajoutReward: 4, nbBlock: 500 }
     ],
 
     phases: [
@@ -62,3 +67,12 @@ const researchDrillBtn = document.getElementById('research-drill-btn');
 const researchCostEl = document.getElementById('research-cost');
 const researchChanceEl = document.getElementById('research-chance');
 const researchNextLevelEl = document.getElementById('research-next-level');
+
+const buyKitQtyInput = document.getElementById('buy-kit-qty');
+const buyKitBtn = document.getElementById('buy-kit-btn');
+const kitTotalCostEl = document.getElementById('kit-total-cost');
+const kitStockCountEl = document.getElementById('kit-stock-count');
+
+const buyMatQtyInput = document.getElementById('buy-mat-qty');
+const buyMatBtn = document.getElementById('buy-mat-btn');
+const matTotalCostEl = document.getElementById('mat-total-cost');

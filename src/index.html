@@ -128,16 +128,72 @@
                     </div>
                 </div>
 
-                <!-- SECTION 2 : KIT DE RÉPARATION -->
-                <div class="shop-item-card">
-                    <div class="shop-item-info">
-                        <div class="upgrade-title">Kit Caisse à outils</div>
-                        <div class="shop-item-desc">Remet en service une drill en panne.</div>
+                <!-- SECTION 2 : KIT DE CAISSE A OUTILS -->
+                <div class="shop-item-card" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px;">
+                    <div class="shop-item-info" style="flex: 1; text-align: left;">
+                        <div class="upgrade-title" style="margin: 0; font-size: 1rem;">Kit Caisse à outils</div>
+                        <div class="shop-item-desc" style="font-size: 0.8rem; color: #a0aec0;">
+                            Remet en service une drill en panne (Prix: 5 000 $ / unité).
+                        </div>
+                        <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                            <label for="buy-kit-qty" style="font-size: 0.85rem; color: var(--brass);">Quantité :</label>
+                            <input type="number" id="buy-kit-qty" min="1" max="999" value="1" style="width: 65px; padding: 4px; text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border); color: #fff; border-radius: 4px;">
+                        </div>
                     </div>
-                    <button class="btn" id="buy-repair-kit-btn">
-                        Acheter (<span id="repair-kit-cost">1500</span> $)
+                    <button class="btn" id="buy-kit-btn" style="max-width: 180px;">
+                        Acheter (<span id="kit-total-cost">5 000</span> $)
                     </button>
                 </div>
+
+                <!-- SECTION 3 : MATERIAUX DE REPARATION -->
+                <div class="shop-item-card" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px;">
+                    <div class="shop-item-info" style="flex: 1; text-align: left;">
+                        <div class="upgrade-title" style="margin: 0; font-size: 1rem;">Matériaux de réparation</div>
+                        <div class="shop-item-desc" style="font-size: 0.8rem; color: #a0aec0;">
+                            Redonne 25% de durabilité à la drill (Prix: 500 $ / unité).
+                        </div>
+                        <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                            <label for="buy-mat-qty" style="font-size: 0.85rem; color: var(--brass);">Quantité :</label>
+                            <input type="number" id="buy-mat-qty" min="1" max="999" value="1" style="width: 65px; padding: 4px; text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border); color: #fff; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <button class="btn" id="buy-mat-btn" style="max-width: 180px;">
+                        Acheter (<span id="mat-total-cost">500</span> $)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ecran de réparation des drills -->
+    <div id="repair-modal" class="screen-overlay" style="display: none; z-index: 10000;">
+        <div class="login-box glass-panel" style="max-width: 650px; width: 92%; max-height: 85vh; display: flex; flex-direction: column; padding: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--panel-border); padding-bottom: 8px; margin-bottom: 12px;">
+                <h3 style="margin: 0; color: var(--brass, #c5a059);">Atelier de Réparation</h3>
+                <button type="button" class="btn-mini" onclick="closeRepairModal()">✕</button>
+            </div>
+
+            <!-- Onglets de sélection du mode -->
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button type="button" class="btn-mini" id="tab-repair-hs" onclick="switchRepairTab('hs')" style="flex: 1; padding: 8px; font-weight: bold; background: #b85d19; border-color: var(--brass);">
+                    ⚡ Dépannage (Kits Caisse : <span id="repair-modal-kits">0</span>)
+                </button>
+                <button type="button" class="btn-mini" id="tab-repair-dura" onclick="switchRepairTab('dura')" style="flex: 1; padding: 8px; font-weight: bold; background: #231d1b; border-color: #423530;">
+                    ❤️ Durabilité (Matériaux : <span id="repair-modal-mats">0</span>)
+                </button>
+            </div>
+
+            <p id="repair-modal-instructions" style="font-size: 0.85rem; color: #a0aec0; margin: 0 0 10px 0;">
+                Cliquez sur une foreuse en panne pour tenter une remise en service.
+            </p>
+
+            <!-- Grille des drills -->
+            <div id="repair-drills-grid" style="overflow-y: auto; flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0, 0, 0, 0.25);">
+                <!-- Rempli dynamiquement en JS -->
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button type="button" class="btn-mini" onclick="closeRepairModal()">Fermer</button>
             </div>
         </div>
     </div>
@@ -170,6 +226,9 @@
             <div class="hangar-shop hangar-shop--divided">
                 <button class="btn drill-shop-btn" id="open-shop-btn">
                     🏪 Ouvrir le Magasin
+                </button>
+                <button class="btn btn-action-deploy" id="open-repair-btn" style="margin-top: 10px;">
+                    🔧 Réparer les Drills (<span id="kit-stock-count">0</span> kits)
                 </button>
             </div>
 
