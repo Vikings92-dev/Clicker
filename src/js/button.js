@@ -184,6 +184,12 @@ if (openRepairBtn) {
     openRepairBtn.addEventListener('click', openRepairModal);
 }
 
+if (buyMatTypeSelect) {
+    buyMatTypeSelect.addEventListener('change', () => {
+        updateCosts();
+    });
+}
+
 if (buyMatQtyInput) {
     buyMatQtyInput.addEventListener('input', () => {
         if (buyMatQtyInput.value < 1) buyMatQtyInput.value = 1;
@@ -195,12 +201,14 @@ if (buyMatBtn) {
     buyMatBtn.addEventListener('click', async () => {
         if (isGameFinished || isPurchaseOnCooldown) return;
 
+        const selectedType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
+        const matTemplate = game.repairMateriauxTemplates.find(m => m.type === selectedType) || game.repairMateriauxTemplates[0];
         const qty = Math.max(1, parseInt(buyMatQtyInput.value) || 1);
-        const totalCost = (game.matCost || 500) * qty;
+        const totalCost = matTemplate.costBase * qty;
 
         if (game.money >= totalCost) {
             game.money -= totalCost;
-            game.repairMetariaux = (game.repairMetariaux || 0) + qty;
+            game.repairMateriaux[matTemplate.tier] = (game.repairMateriaux[matTemplate.tier] || 0) + qty;
 
             triggerPurchaseCooldown();
             updateUI();

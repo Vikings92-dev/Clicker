@@ -18,14 +18,22 @@ let game = {
     kitCost: 5000,
     repairKits: 0,
     matCost: 500,
-    repairMetariaux: 0,
+    repairMateriaux: [0,0,0,0,0],
+
+    repairMateriauxTemplates: [
+        { type: "T0", tier: 0, costBase: 500},
+        { type: "T1", tier: 1, costBase: 1500},
+        { type: "T2", tier: 2, costBase: 5000},
+        { type: "T3", tier: 3, costBase: 15000},
+        { type: "T4", tier: 4, costBase: 50000}
+    ],
 
     drillTemplates: [
-        { tier: 0, name: "Drill en Prismaline", speed: 1.5, power: 10, pourcentagePerteDura: 20, resistance: 200, maxDura: 300, maxElec: 300, regen: 2.0, costBase: 8500, repairChance: 80, isHS: false },
-        { tier: 1, name: "Drill en Véridite", speed: 2.0, power: 35, pourcentagePerteDura: 30, resistance: 550, maxDura: 450, maxElec: 400, regen: 3.5, costBase: 60000, repairChance: 60, isHS: false },
-        { tier: 2, name: "Drill en Bracium", speed: 2.5, power: 120, pourcentagePerteDura: 40, resistance: 2500, maxDura: 750, maxElec: 500, regen: 6.0, costBase: 450000, repairChance: 40, isHS: false },
-        { tier: 3, name: "Drill en Azula", speed: 3.5, power: 450, pourcentagePerteDura: 50, resistance: 10000, maxDura: 1200, maxElec: 600, regen: 11.0, costBase: 3500000, repairChance: 20, isHS: false },
-        { tier: 4, name: "Drill en Aetheris", speed: 5.0, power: 2500, pourcentagePerteDura: 60, resistance: 32000, maxDura: 2500, maxElec: 700, regen: 22.0, costBase: 30000000, repairChance: 10, isHS: false }
+        { tier: 0, name: "Drill en Prismaline", speed: 1.5, power: 10, pourcentagePerteDura: 20, resistance: 200, maxDura: 300, maxElec: 300, regen: 2.0, costBase: 8500, repairHSChance: 80, isHS: false },
+        { tier: 1, name: "Drill en Véridite", speed: 2.0, power: 35, pourcentagePerteDura: 30, resistance: 550, maxDura: 450, maxElec: 400, regen: 3.5, costBase: 60000, repairHSChance: 60, isHS: false },
+        { tier: 2, name: "Drill en Bracium", speed: 2.5, power: 120, pourcentagePerteDura: 40, resistance: 2500, maxDura: 750, maxElec: 500, regen: 6.0, costBase: 450000, repairHSChance: 40, isHS: false },
+        { tier: 3, name: "Drill en Azula", speed: 3.5, power: 450, pourcentagePerteDura: 50, resistance: 10000, maxDura: 1200, maxElec: 600, regen: 11.0, costBase: 3500000, repairHSChance: 20, isHS: false },
+        { tier: 4, name: "Drill en Aetheris", speed: 5.0, power: 2500, pourcentagePerteDura: 60, resistance: 32000, maxDura: 2500, maxElec: 700, regen: 22.0, costBase: 30000000, repairHSChance: 10, isHS: false }
     ],
 
     paliers: [
@@ -76,3 +84,4 @@ const kitStockCountEl = document.getElementById('kit-stock-count');
 const buyMatQtyInput = document.getElementById('buy-mat-qty');
 const buyMatBtn = document.getElementById('buy-mat-btn');
 const matTotalCostEl = document.getElementById('mat-total-cost');
+const buyMatTypeSelect = document.getElementById('buy-mat-type');

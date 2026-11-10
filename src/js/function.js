@@ -284,8 +284,10 @@ function updateCosts() {
     if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
 
     // Gestion de l'achat de matériaux
+    const selectedType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
+    const matTemplate = (game.repairMateriauxTemplates && game.repairMateriauxTemplates.find(m => m.type === selectedType)) || { costBase: 500 };
     const qtyMat = buyMatQtyInput ? Math.max(1, parseInt(buyMatQtyInput.value) || 1) : 1;
-    const totalMatPrice = (game.matCost || 500) * qtyMat;
+    const totalMatPrice = matTemplate.costBase * qtyMat;
     if (matTotalCostEl) matTotalCostEl.innerText = formatMoney(totalMatPrice);
     if (buyMatBtn) buyMatBtn.disabled = game.money < totalMatPrice || isPurchaseOnCooldown;
 }
@@ -581,7 +583,7 @@ function renderRepairGrid() {
 
     game.inventory.forEach(d => {
         const template = game.drillTemplates[d.tier] || {};
-        const chance = template.repairChance !== undefined ? template.repairChance : 50;
+        const chance = template.repairHSChance !== undefined ? template.repairHSChance : 50;
         const card = document.createElement('div');
         card.className = "drill-select-card";
 
