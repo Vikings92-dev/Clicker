@@ -4,12 +4,12 @@ Réequilibrage du jeu
 [ ] Manuel des tiers
 [X] Modificaction déploiement de drill
 [X] Modification affichage hangar à drill
-[X] Ajout d'électricité en retour passif dans le hanger (tier 2-max)
-[X] Modification de la récup de dura en mettant de l'achat de matériaux
+[X] Ajout d'électricité en retour passif dans le hangar
+[I] Modification de la récup de dura en mettant de l'achat de matériaux
 [ ] Module d'amélioration (conso elec, perte de dura moins forte)
 [X] Ajout de panne de drill
 [X] Dépannage de drill par achat de caisse à outil
-[ ] Ajout event aléatoire autour du bouton de minage (hast, +X click)
+[X] Ajout event aléatoire autour du bouton de minage (hast, +X click)
 [ ] Récupération d'item lors des clicks (réparation, caisse à outil, item à vendre au marché)
 
 

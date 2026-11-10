@@ -39,6 +39,11 @@ clickBtn.addEventListener('click', () => {
     if (isGameFinished || isSuspendedByCaptcha) return;
 
     rawClickCount++;
+    
+    // Test de l'événement aléatoire (1 chance sur 500 clics valides)
+    if (typeof checkRandomClickEvent === 'function') {
+        checkRandomClickEvent();
+    }
 
     const now = performance.now();
 
@@ -77,11 +82,6 @@ clickBtn.addEventListener('click', () => {
     // Multiplicateur temporaire (si actif via js/events.js)
     const currentMultiplier = (typeof getClickMultiplier === 'function') ? getClickMultiplier() : 1;
     game.money += game.pickaxePower[game.pickaxeTier] * currentMultiplier;
-
-    // Test de l'événement aléatoire (1 chance sur 500 clics valides)
-    if (typeof checkRandomClickEvent === 'function') {
-        checkRandomClickEvent();
-    }
 
     updateUI();
 });
