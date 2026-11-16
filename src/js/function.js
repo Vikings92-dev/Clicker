@@ -208,13 +208,6 @@ function togglePhaseContent(phaseId) {
 }
 window.togglePhaseContent = togglePhaseContent;
 
-function deployDrillToPhase(inventoryIndex, phaseId) {
-    const phase = game.phases.find(p => p.id === phaseId);
-    const drill = game.inventory.splice(inventoryIndex, 1)[0]; // Retire de l'inventaire
-    phase.activeDrills.push(drill);
-    saveGameToServer();
-    updateUI();
-}
 
 function recallDrillFromPhase(drillUid, phaseId) {
     const phase = game.phases.find(p => p.id === phaseId);
@@ -285,30 +278,56 @@ function updateCosts() {
     if (buyKitBtn) buyKitBtn.disabled = game.money < totalKitPrice || isPurchaseOnCooldown;
     if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
 
-    // Gestion de l'achat de matériaux
-    if (buyMatTypeSelect && lastRenderedUnlockedTier !== game.unlockedDrillTier) {
-        lastRenderedUnlockedTier = game.unlockedDrillTier;
-        let isCurrentSelectionDisabled = false;
+    // Badges de stocks et craft
+    const partsCountEl = document.getElementById('parts-stock-count');
+    const univCountEl = document.getElementById('univ-stock-count');
+    const craftPartsEl = document.getElementById('craft-parts-count');
+    const btnCraftKit = document.getElementById('btn-craft-kit');
+    const btnCraftKitMax = document.getElementById('btn-craft-kit-max');
 
+    if (partsCountEl) partsCountEl.innerText = game.craftParts || 0;
+    if (univCountEl) univCountEl.innerText = game.universalRepairs || 0;
+    if (craftPartsEl) craftPartsEl.innerText = game.craftParts || 0;
+
+    const canCraft = (game.craftParts || 0) >= 5;
+    if (btnCraftKit) btnCraftKit.disabled = !canCraft;
+    if (btnCraftKitMax) btnCraftKitMax.disabled = !canCraft;
+
+    // Mise à jour des stocks de matériaux par tier dans le Hangar
+    for (let i = 0; i <= 4; i++) {
+        const hangarMatEl = document.getElementById(`hangar-mat-${i}`);
+        if (hangarMatEl) {
+            hangarMatEl.innerText = (game.repairMateriaux && game.repairMateriaux[i]) || 0;
+        }
+    }
+
+    // Gestion de l'achat de matériaux & affichage des stocks dans le Magasin
+    const selectedType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
+    const selectedTierIndex = parseInt(selectedType.replace("T", "")) || 0;
+    const selectedStock = (game.repairMateriaux && game.repairMateriaux[selectedTierIndex]) || 0;
+    
+    const selectedStockBadge = document.getElementById('selected-mat-stock-count');
+    if (selectedStockBadge) {
+        selectedStockBadge.innerText = selectedStock;
+    }
+
+    if (buyMatTypeSelect) {
         Array.from(buyMatTypeSelect.options).forEach((opt, index) => {
             const template = game.drillTemplates[index];
             const baseName = template ? template.name : `Tier ${index}`;
             const isUnlocked = index <= game.unlockedDrillTier;
+            const count = (game.repairMateriaux && game.repairMateriaux[index]) || 0;
+            const text = isUnlocked ? `${baseName} (Stock: ${count})` : `${baseName} (Verrouillé)`;
 
+            if (opt.innerText !== text) opt.innerText = text;
             opt.disabled = !isUnlocked;
-            opt.innerText = isUnlocked ? baseName : `${baseName} (Verrouillé)`;
-
-            if (opt.value === buyMatTypeSelect.value && !isUnlocked) {
-                isCurrentSelectionDisabled = true;
-            }
         });
 
-        if (isCurrentSelectionDisabled) {
+        if (buyMatTypeSelect.options[selectedTierIndex] && buyMatTypeSelect.options[selectedTierIndex].disabled) {
             buyMatTypeSelect.value = `T${game.unlockedDrillTier}`;
         }
     }
 
-    const selectedType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
     const matTemplate = (game.repairMateriauxTemplates && game.repairMateriauxTemplates.find(m => m.type === selectedType)) || { costBase: 500 };
     const qtyMat = buyMatQtyInput ? Math.max(1, parseInt(buyMatQtyInput.value) || 1) : 1;
     const totalMatPrice = matTemplate.costBase * qtyMat;
@@ -558,16 +577,43 @@ function switchRepairTab(tabName) {
     currentRepairTab = tabName;
     const btnHs = document.getElementById('tab-repair-hs');
     const btnDura = document.getElementById('tab-repair-dura');
+    const btnUniv = document.getElementById('tab-repair-univ');
     const instructions = document.getElementById('repair-modal-instructions');
 
+    // Réinitialisation visuelle de tous les onglets
+    [btnHs, btnDura, btnUniv].forEach(btn => {
+        if (btn) {
+            btn.classList.remove('active');
+            btn.style.background = '#231d1b';
+            btn.style.borderColor = '#423530';
+            btn.style.color = '#cbd5e0';
+        }
+    });
+
     if (currentRepairTab === 'hs') {
-        if (btnHs) { btnHs.style.background = '#b85d19'; btnHs.style.borderColor = 'var(--brass)'; }
-        if (btnDura) { btnDura.style.background = '#231d1b'; btnDura.style.borderColor = '#423530'; }
+        if (btnHs) {
+            btnHs.classList.add('active');
+            btnHs.style.background = 'linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%)';
+            btnHs.style.borderColor = 'var(--brass)';
+            btnHs.style.color = '#fff';
+        }
         if (instructions) instructions.innerText = "Cliquez sur une foreuse en panne pour tenter une remise en service (consomme 1 Caisse à outils).";
-    } else {
-        if (btnDura) { btnDura.style.background = '#b85d19'; btnDura.style.borderColor = 'var(--brass)'; }
-        if (btnHs) { btnHs.style.background = '#231d1b'; btnHs.style.borderColor = '#423530'; }
-        if (instructions) instructions.innerText = "Cliquez sur une foreuse endommagée pour réparer 50% de sa durabilité (consomme 1 Matériau de réparation).";
+    } else if (currentRepairTab === 'dura') {
+        if (btnDura) {
+            btnDura.classList.add('active');
+            btnDura.style.background = 'linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%)';
+            btnDura.style.borderColor = 'var(--brass)';
+            btnDura.style.color = '#fff';
+        }
+        if (instructions) instructions.innerText = "Cliquez sur une foreuse endommagée pour réparer 50% de sa durabilité (consomme 1 Matériau de son Tier).";
+    } else if (currentRepairTab === 'univ') {
+        if (btnUniv) {
+            btnUniv.classList.add('active');
+            btnUniv.style.background = 'linear-gradient(180deg, #2e7d32 0%, #1b4d21 100%)';
+            btnUniv.style.borderColor = '#50fa7b';
+            btnUniv.style.color = '#fff';
+        }
+        if (instructions) instructions.innerText = "Cliquez sur une foreuse pour restaurer 100% de sa durabilité et réparer toute panne sans risque d'échec (consomme 1 Réparation Universelle).";
     }
 
     renderRepairGrid();
@@ -591,11 +637,14 @@ window.closeRepairModal = closeRepairModal;
 function renderRepairGrid() {
     const grid = document.getElementById('repair-drills-grid');
     const kitsCountEl = document.getElementById('repair-modal-kits');
-    const matsCountEl = document.getElementById('repair-modal-mats');
+    const univCountEl = document.getElementById('repair-modal-univ');
+    const craftPartsEl = document.getElementById('craft-parts-count');
 
     if (kitsCountEl) kitsCountEl.innerText = game.repairKits || 0;
-    if (matsCountEl) matsCountEl.innerText = game.repairMetariaux || 0;
+    if (univCountEl) univCountEl.innerText = game.universalRepairs || 0;
+    if (craftPartsEl) craftPartsEl.innerText = game.craftParts || 0;
     if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
+
     if (!grid) return;
 
     grid.innerHTML = '';
@@ -623,16 +672,18 @@ function renderRepairGrid() {
                     ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
                     Chance: <strong style="color: #50fa7b;">${chance}%</strong>
                 </div>
-                <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || game.repairKits <= 0) ? 'disabled' : ''}>
-                    ${canRepair ? 'Réparer' : 'Intact'}
+                <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || (game.repairKits || 0) <= 0) ? 'disabled' : ''}>
+                    ${canRepair ? 'Dépanner' : 'Opérationnel'}
                 </button>
             `;
 
             if (canRepair) {
                 card.addEventListener('click', () => applyHsRepair(d.uid, chance));
             }
-        } else {
+        } else if (currentRepairTab === 'dura') {
             const canRepair = d.dura < d.maxDura;
+            const matStock = (game.repairMateriaux && game.repairMateriaux[d.tier]) || 0;
+            const matName = template.name ? template.name.replace("Drill en ", "") : `T${d.tier}`;
             card.style.opacity = canRepair ? "1" : "0.5";
             card.style.cursor = canRepair ? "pointer" : "not-allowed";
 
@@ -641,15 +692,36 @@ function renderRepairGrid() {
                 <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
                 <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
                     ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
-                    Chance: <strong style="color: #50fa7b;">${chance}%</strong>
+                    Mat T${d.tier} (${matName}) : <strong style="color: ${matStock > 0 ? '#50fa7b' : '#ff5555'};">${matStock} en stock</strong>
                 </div>
-                <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || (game.repairMetariaux || 0) <= 0) ? 'disabled' : ''}>
+                <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || matStock <= 0) ? 'disabled' : ''}>
                     ${canRepair ? '+50% Dura' : 'Intact'}
                 </button>
             `;
 
             if (canRepair) {
                 card.addEventListener('click', () => applyDuraRepair(d.uid, chance));
+            }
+        } else if (currentRepairTab === 'univ') {
+            const needsRepair = d.isHS || d.dura < d.maxDura;
+            const hasUniv = (game.universalRepairs || 0) > 0;
+            card.style.opacity = needsRepair ? "1" : "0.5";
+            card.style.cursor = needsRepair ? "pointer" : "not-allowed";
+
+            card.innerHTML = `
+                <div style="font-size: 1.3rem;">✨</div>
+                <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
+                <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
+                    ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
+                    État: <strong style="color: ${d.isHS ? '#ff5555' : '#50fa7b'};">${d.isHS ? 'HS' : 'OK'}</strong>
+                </div>
+                <button class="btn-mini btn-action-deploy" style="margin-top: 4px; width: 100%;" ${(!needsRepair || !hasUniv) ? 'disabled' : ''}>
+                    ${needsRepair ? 'Remettre à Neuf' : 'Déjà à 100%'}
+                </button>
+            `;
+
+            if (needsRepair) {
+                card.addEventListener('click', () => applyUniversalRepair(d.uid));
             }
         }
 
@@ -682,15 +754,16 @@ function applyHsRepair(drillUid, chance) {
 }
 
 function applyDuraRepair(drillUid, chance) {
-    if (!game.repairMetariaux || game.repairMetariaux <= 0) {
-        alert("Vous n'avez plus de Matériaux de réparation disponibles.");
-        return;
-    }
-
     const drill = game.inventory.find(d => d.uid === drillUid);
     if (!drill || drill.dura >= drill.maxDura) return;
 
-    game.repairMetariaux--;
+    const drillTier = drill.tier !== undefined ? drill.tier : 0;
+    if (!game.repairMateriaux || (game.repairMateriaux[drillTier] || 0) <= 0) {
+        alert(`Vous n'avez pas de Matériau de réparation Tier ${drillTier} pour réparer ${drill.name}. Vous pouvez en acheter au Magasin.`);
+        return;
+    }
+
+    game.repairMateriaux[drillTier]--;
     const roll = Math.floor(Math.random() * 100) + 1;
 
     if (roll <= chance) {
@@ -698,10 +771,118 @@ function applyDuraRepair(drillUid, chance) {
         drill.dura = Math.min(drill.maxDura, drill.dura + healAmount);
         alert(`🎉 Réparation réussie sur ${drill.name} ! (+${Math.ceil(healAmount)} durabilité)`);
     } else {
-        alert(`❌ Échec de la réparation sur ${drill.name} (${roll}/100 > ${chance}% requis). Les matériaux ont été consommés.`);
+        alert(`❌ Échec de la réparation sur ${drill.name} (${roll}/100 > ${chance}% requis). Le matériau a été consommé.`);
     }
 
     renderRepairGrid();
     updateUI();
     saveGameToServer();
 }
+
+function applyUniversalRepair(drillUid) {
+    if (!game.universalRepairs || game.universalRepairs <= 0) {
+        alert("Vous n'avez aucune Réparation Universelle en stock.");
+        return;
+    }
+
+    const drill = game.inventory.find(d => d.uid === drillUid);
+    if (!drill) return;
+
+    if (!drill.isHS && drill.dura >= drill.maxDura) {
+        alert(`${drill.name} est déjà en parfait état !`);
+        return;
+    }
+
+    game.universalRepairs--;
+    drill.isHS = false;
+    drill.dura = drill.maxDura;
+
+    alert(`✨ Restauration Universelle réussie sur ${drill.name} ! Durabilité à 100% et panne levée.`);
+
+    renderRepairGrid();
+    updateUI();
+    saveGameToServer();
+}
+window.applyUniversalRepair = applyUniversalRepair;
+
+function craftRepairKit(qty = 1) {
+    const COST_PER_KIT = 5;
+    const requestedQty = Math.max(1, parseInt(qty) || 1);
+    const totalCost = requestedQty * COST_PER_KIT;
+
+    if ((game.craftParts || 0) < totalCost) {
+        alert(`Vous n'avez pas assez de pièces mécaniques (${totalCost} requises pour ${requestedQty} caisse(s), possédées : ${game.craftParts || 0}).`);
+        return;
+    }
+
+    game.craftParts -= totalCost;
+    game.repairKits = (game.repairKits || 0) + requestedQty;
+
+    renderRepairGrid();
+    updateUI();
+    saveGameToServer();
+}
+window.craftRepairKit = craftRepairKit;
+
+function craftRepairKitMax() {
+    const maxQty = Math.floor((game.craftParts || 0) / 5);
+    if (maxQty <= 0) {
+        alert("Vous n'avez pas assez de pièces mécaniques (minimum 5 requises pour fabriquer une caisse).");
+        return;
+    }
+    craftRepairKit(maxQty);
+}
+window.craftRepairKitMax = craftRepairKitMax;
+
+function checkClickLoot(event) {
+    const roll = Math.random() * 100; // Tirage de 0 à 100%
+
+    // 1. Caisse à outils complète : 0.15% (~1 chance sur 660)
+    if (roll < 0.15) {
+        game.repairKits = (game.repairKits || 0) + 1;
+        showFloatingLootText(event, "🧰 +1 Caisse à outils !", "#f1fa8c");
+        saveGameToServer();
+    }
+    // 2. Réparation Universelle : 0.05% (~1 chance sur 2000)
+    else if (roll < 0.20) {
+        game.universalRepairs = (game.universalRepairs || 0) + 1;
+        showFloatingLootText(event, "✨ +1 Réparation Universelle !", "#50fa7b");
+        saveGameToServer();
+    }
+    // 3. Pièces mécaniques de craft : 2.5% (~1 chance sur 40)
+    else if (roll < 2.70) {
+        game.craftParts = (game.craftParts || 0) + 1;
+        showFloatingLootText(event, "⚙️ +1 Pièce mécanique", "#8be9fd");
+    }
+}
+window.checkClickLoot = checkClickLoot;
+
+function showFloatingLootText(event, text, color) {
+    const clickArea = document.querySelector('.click-area');
+    if (!clickArea) return;
+
+    const popup = document.createElement('div');
+    popup.className = 'floating-loot-indicator';
+    popup.innerText = text;
+    popup.style.color = color || '#fff';
+
+    const areaRect = clickArea.getBoundingClientRect();
+    let posX = areaRect.width / 2;
+    let posY = areaRect.height / 2 - 30;
+
+    if (event && event.clientX && event.clientY) {
+        posX = event.clientX - areaRect.left;
+        posY = event.clientY - areaRect.top;
+    }
+
+    const jitterX = (Math.random() - 0.5) * 40;
+    popup.style.left = `${posX + jitterX}px`;
+    popup.style.top = `${posY}px`;
+
+    clickArea.appendChild(popup);
+
+    setTimeout(() => {
+        popup.remove();
+    }, 1200);
+}
+window.showFloatingLootText = showFloatingLootText;

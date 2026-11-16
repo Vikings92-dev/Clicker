@@ -1,15 +1,308 @@
 /* =========================================
-   ÉCRAN D'INVENTAIRE
+   ÉCRAN ET COMPOSANTS D'INVENTAIRE (THÈME STEAMPUNK / CHRONOS)
    ========================================= */
+
 #inventory-screen {
     display: none; /* Affiché dynamiquement à la demande */
 }
 
 .inventory-box {
-    border-color: #e07809;
-    box-shadow: 0 10px 35px #ffb86c;
+    border-color: var(--brass);
+    box-shadow: 0 10px 35px rgba(197, 160, 89, 0.4);
 }
 
 .inventory-title {
-    color: #e07809;
+    color: var(--copper-light);
+    font-family: var(--font-title);
+}
+
+/* =========================================
+   COFFRE DE MAINTENANCE (HANGAR PRINCIPAL)
+   ========================================= */
+
+.workshop-vault {
+    margin-top: 10px;
+    background: linear-gradient(180deg, rgba(28, 22, 18, 0.95) 0%, rgba(16, 12, 10, 0.95) 100%);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px;
+    box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.vault-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+    padding-bottom: 5px;
+    margin-bottom: 8px;
+}
+
+.vault-title {
+    font-family: var(--font-title);
+    font-size: 0.76rem;
+    color: var(--brass);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow: 0 0 6px rgba(197, 160, 89, 0.35);
+}
+
+/* Grille des consommables rapides */
+.vault-consumables-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.vault-slot {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(197, 160, 89, 0.2);
+    border-radius: 4px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.vault-slot:hover {
+    border-color: var(--brass);
+    background: rgba(197, 160, 89, 0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.vault-slot .slot-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.8));
+}
+
+.vault-slot .slot-data {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    overflow: hidden;
+}
+
+.vault-slot .slot-name {
+    font-size: 0.65rem;
+    color: #a0aec0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vault-slot .slot-value {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+
+.vault-slot .slot-kits {
+    color: #f1fa8c;
+    text-shadow: 0 0 6px rgba(241, 250, 140, 0.3);
+}
+
+.vault-slot .slot-parts {
+    color: #8be9fd;
+    text-shadow: 0 0 6px rgba(139, 233, 253, 0.3);
+}
+
+.vault-slot .slot-univ {
+    color: #50fa7b;
+    text-shadow: 0 0 6px rgba(80, 250, 123, 0.3);
+}
+
+/* Râtelier horizontal des minerais de réparation (T0 à T4) */
+.vault-materials-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 5px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vault-mat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 2px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.vault-mat-chip:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.vault-mat-chip .mat-label {
+    font-size: 0.65rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.vault-mat-chip .mat-count {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+/* Teintes minérales par tier */
+.vault-mat-chip.mat-tier-0 { border-color: rgba(91, 192, 190, 0.35); }
+.vault-mat-chip.mat-tier-0 .mat-label { color: #5bc0be; }
+
+.vault-mat-chip.mat-tier-1 { border-color: rgba(80, 250, 123, 0.35); }
+.vault-mat-chip.mat-tier-1 .mat-label { color: #50fa7b; }
+
+.vault-mat-chip.mat-tier-2 { border-color: rgba(255, 184, 108, 0.35); }
+.vault-mat-chip.mat-tier-2 .mat-label { color: #ffb86c; }
+
+.vault-mat-chip.mat-tier-3 { border-color: rgba(139, 233, 253, 0.35); }
+.vault-mat-chip.mat-tier-3 .mat-label { color: #8be9fd; }
+
+.vault-mat-chip.mat-tier-4 { border-color: rgba(189, 147, 249, 0.35); }
+.vault-mat-chip.mat-tier-4 .mat-label { color: #bd93f9; }
+
+/* =========================================
+   ÉTABLI DE FABRICATION & ONGLETS DE RÉPARATION
+   ========================================= */
+
+.repair-craft-box {
+    background: linear-gradient(135deg, rgba(38, 28, 22, 0.95) 0%, rgba(20, 15, 12, 0.98) 100%);
+    border: 1px solid var(--brass);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.craft-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.craft-title {
+    font-family: var(--font-title);
+    font-weight: bold;
+    font-size: 0.88rem;
+    color: var(--brass);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
+}
+
+.craft-cost-desc {
+    font-size: 0.76rem;
+    color: #a0aec0;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.craft-cost-desc strong {
+    color: var(--text-main);
+}
+
+.craft-stock-pill {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(139, 233, 253, 0.3);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: var(--font-mono);
+}
+
+.craft-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.repair-tabs-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.repair-tab-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-family: var(--font-title);
+    font-size: 0.82rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    border: 1px solid #423530;
+    background: #231d1b;
+    color: #cbd5e0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.repair-tab-btn:hover {
+    border-color: var(--brass);
+    color: #fff;
+    filter: brightness(1.15);
+}
+
+.tab-count-badge {
+    background: rgba(0, 0, 0, 0.55);
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f1fa8c;
+}
+
+.tab-badge-sub {
+    font-size: 0.72rem;
+    color: #a0aec0;
+    font-family: var(--font-text);
+}
+
+/* =========================================
+   INDICATEUR DE STOCK AU MAGASIN
+   ========================================= */
+
+.shop-stock-pill {
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    background: linear-gradient(180deg, rgba(22, 16, 13, 0.95) 0%, rgba(12, 9, 8, 0.95) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.4);
+    border-radius: 4px;
+    padding: 3px 10px;
+    color: #cbd5e0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.shop-stock-pill strong {
+    color: #50fa7b;
+    font-size: 0.9rem;
+    text-shadow: 0 0 6px rgba(80, 250, 123, 0.4);
 }

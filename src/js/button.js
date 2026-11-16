@@ -35,7 +35,7 @@ setInterval(() => {
     validClicksThisSecond = 0;
 }, 1000);
 
-clickBtn.addEventListener('click', () => {
+clickBtn.addEventListener('click', (e) => {
     if (isGameFinished || isSuspendedByCaptcha) return;
 
     rawClickCount++;
@@ -78,6 +78,11 @@ clickBtn.addEventListener('click', () => {
     lastValidClickTimestamp = now;
 
     validClicksThisSecond++;
+
+    // Tirage aléatoire de loot au clic
+    if (typeof checkClickLoot === 'function') {
+        checkClickLoot(e);
+    }
 
     // Multiplicateur temporaire (si actif via js/events.js)
     const currentMultiplier = (typeof getClickMultiplier === 'function') ? getClickMultiplier() : 1;

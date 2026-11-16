@@ -17,6 +17,8 @@ let game = {
     
     kitCost: 5000,
     repairKits: 0,
+    universalRepairs: 0,
+    craftParts: 0,
     matCost: 500,
     repairMateriaux: [0,0,0,0,0],
 

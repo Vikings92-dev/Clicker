@@ -21,6 +21,8 @@ async function loadGameFromServer() {
             game.drillCounterId = savedGame.drillCounterId ?? 0;
             game.inventory = savedGame.inventory ?? [];
             game.repairKits = savedGame.repairKits ?? 0;
+            game.universalRepairs = savedGame.universalRepairs ?? 0;
+            game.craftParts = savedGame.craftParts ?? 0;
             game.repairMateriaux = Array.isArray(savedGame.repairMateriaux) ? savedGame.repairMateriaux : [0,0,0,0,0];
 
             if (Array.isArray(savedGame.phases)) {
@@ -50,7 +52,7 @@ async function loadGameFromServer() {
             }
         } else {
             game.money = 0; game.pickaxeTier = 0; game.unlockedDrillTier = 0; game.drillCounterId = 0; game.inventory = [];
-            game.repairKits = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
+            game.repairKits = 0; game.universalRepairs = 0; game.craftParts = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
             game.phases.forEach(p => { p.progress = 0; p.blockBrocken = 0; p.unlocked = (p.id === 1); p.activeDrills = []; });
             await saveGameToServer();
         }
