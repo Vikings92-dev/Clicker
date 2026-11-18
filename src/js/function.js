@@ -40,12 +40,62 @@ function getGlobalDrillCost() {
     return Math.floor(currentTemplate.costBase + multiplier * Math.pow(x - 1, 5));
 }
 
+function getPhaseBgImage(phase) {
+    if (phase && Array.isArray(phase.displays) && phase.displays.length > 0) {
+        const idx = (phase.selectedDisplay >= 0 && phase.selectedDisplay < phase.displays.length)
+            ? phase.selectedDisplay
+            : 0;
+        return phase.displays[idx].bgImage;
+    }
+    return (phase && phase.bgImage) || "/public/background2.png";
+}
+
+function setPhaseDisplay(phaseId, displayIndex) {
+    const phase = game.phases.find(p => p.id === phaseId);
+    if (!phase || !phase.unlocked || !Array.isArray(phase.displays) || !phase.displays[displayIndex]) return;
+
+    phase.selectedDisplay = displayIndex;
+
+    const imgEl = document.getElementById(`image-phase-${phaseId}`);
+    if (imgEl) {
+        imgEl.setAttribute('src', phase.displays[displayIndex].bgImage);
+    }
+
+    const row = document.getElementById(`phase-${phaseId}`);
+    if (row) {
+        row.querySelectorAll('.display-opt-btn').forEach((btn, idx) => {
+            btn.classList.toggle('active', idx === displayIndex);
+        });
+    }
+
+    saveGameToServer();
+}
+window.setPhaseDisplay = setPhaseDisplay;
+
 function initPhases() {
     phasesContainer.innerHTML = '';
     game.phases.forEach((p, idx) => {
         const row = document.createElement('div');
         row.className = `phase-row ${p.unlocked ? '' : 'locked'}`;
         row.id = `phase-${p.id}`;
+
+        let displaySwitcherHtml = '';
+        if (Array.isArray(p.displays) && p.displays.length > 1) {
+            const activeIdx = (p.selectedDisplay >= 0 && p.selectedDisplay < p.displays.length) ? p.selectedDisplay : 0;
+            const buttonsHtml = p.displays.map((disp, dIdx) => `
+                <button type="button"
+                        class="display-opt-btn ${dIdx === activeIdx ? 'active' : ''}"
+                        onclick="setPhaseDisplay(${p.id}, ${dIdx})"
+                        ${p.unlocked ? '' : 'disabled'}>
+                    ${disp.name}
+                </button>
+            `).join('');
+            displaySwitcherHtml = `
+                <div class="phase-display-switcher" id="phase-display-switcher-${p.id}" onclick="event.stopPropagation()">
+                    ${buttonsHtml}
+                </div>
+            `;
+        }
         
         row.innerHTML = `
             <div class="phase-header" style="cursor: pointer;" onclick="togglePhaseContent(${p.id})">
@@ -53,8 +103,11 @@ function initPhases() {
                     <span class="phase-name" id="phase-title-text-${p.id}">${p.name}</span>
                     <span class="phase-blocks">(${p.blocks})</span>
                 </div>
-                <div id="phase-unlock-status-${p.id}" style="font-size:0.9rem; color:#ff5555;">
-                    ${p.unlocked ? '' : `Déblocage : ${formatMoney(p.reqMoney)} $`}
+                <div class="phase-header-right">
+                    ${displaySwitcherHtml}
+                    <div id="phase-unlock-status-${p.id}" style="font-size:0.9rem; color:#ff5555;">
+                        ${p.unlocked ? '' : `Déblocage : ${formatMoney(p.reqMoney)} $`}
+                    </div>
                 </div>
             </div>
             <div class="phase-controls" id="controls-${p.id}" style="display: none;">
@@ -78,7 +131,7 @@ function initPhases() {
                     <div class="bar-text" id="drill-progress-text-${p.id}">0%</div>
                 </div>
             </div>
-            <img id="image-phase-${p.id}" src="/public/background2.png" alt="Fond phases" class="phase-bg-img">
+            <img id="image-phase-${p.id}" src="${getPhaseBgImage(p)}" alt="Fond phases" class="phase-bg-img">
         `;
         phasesContainer.appendChild(row);
         document.getElementById(`deploy-to-${p.id}`).addEventListener('click', (e) => {
@@ -280,7 +333,14 @@ function updateCosts() {
         if (!p.unlocked && game.money >= p.reqMoney) {
             p.unlocked = true;
             const row = document.getElementById(`phase-${p.id}`);
-            if (row) row.classList.remove('locked');
+            if (row) {
+                row.classList.remove('locked');
+                row.querySelectorAll('.display-opt-btn').forEach(btn => {
+                    btn.disabled = false;
+                });
+            }
+            const deployBtn = document.getElementById(`deploy-to-${p.id}`);
+            if (deployBtn) deployBtn.disabled = false;
             const status = document.getElementById(`phase-unlock-status-${p.id}`);
             if (status) status.innerText = 'Débloqué !';
         }

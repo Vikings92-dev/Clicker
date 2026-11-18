@@ -71,10 +71,31 @@ let game = {
 
     phases: [
         { id: 1, name: "Phase 1", blocks: "Lunaris", baseResist: 15, reward: 3, progress: 0, blockBrocken: 0, unlocked: true, activeDrills: [] },
-        { id: 2, name: "Phase 2", blocks: "Vhoraxis - Névaris", baseResist: 200, reward: 8000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 5000000, activeDrills: [] },
-        { id: 3, name: "Phase 3", blocks: "Magmia - Orthelya", baseResist: 2500, reward: 1500000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 1200000000, activeDrills: [] },
-        { id: 4, name: "Phase 4", blocks: "Vulkania - Kryos-Mir", baseResist: 35000, reward: 220000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 250000000000, activeDrills: [] },
-        { id: 5, name: "Phase 5", blocks: "l'oeil de l'univers", baseResist: 500000, reward: 28000000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 45000000000000, activeDrills: [] }
+        {
+            id: 2, name: "Phase 2", blocks: "Vhoraxis - Névaris", baseResist: 200, reward: 8000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 5000000, activeDrills: [],
+            selectedDisplay: 0,
+            displays: [
+                { name: "Vhoraxis", bgImage: "/public/background2.png" },
+                { name: "Névaris", bgImage: "/public/background.png" }
+            ]
+        },
+        {
+            id: 3, name: "Phase 3", blocks: "Magmia - Orthelya", baseResist: 2500, reward: 1500000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 1200000000, activeDrills: [],
+            selectedDisplay: 0,
+            displays: [
+                { name: "Magmia", bgImage: "/public/background2.png" },
+                { name: "Orthelya", bgImage: "/public/background.png" }
+            ]
+        },
+        {
+            id: 4, name: "Phase 4", blocks: "Vulkania - Kryos-Mir", baseResist: 35000, reward: 220000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 250000000000, activeDrills: [],
+            selectedDisplay: 0,
+            displays: [
+                { name: "Vulkania", bgImage: "/public/background2.png" },
+                { name: "Kryos-Mir", bgImage: "/public/background.png" }
+            ]
+        },
+        { id: 5, name: "Phase 5", blocks: "l'oeil de l'univers", baseResist: 500000, reward: 28000000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 45000000000000, activeDrills: [], bgImage: "/public/background2.png" }
     ]
 };
 

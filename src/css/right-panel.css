@@ -137,6 +137,53 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.phase-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.phase-display-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 3px;
+}
+
+.display-opt-btn {
+    background: transparent;
+    color: #cbd5e0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.display-opt-btn:hover:not(:disabled) {
+    background: rgba(197, 160, 89, 0.18);
+    color: #fff;
+}
+
+.display-opt-btn.active {
+    background: linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%);
+    border-color: var(--brass);
+    color: #fff;
+    box-shadow: 0 0 6px rgba(197, 160, 89, 0.35);
+}
+
+.display-opt-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .phase-name {
