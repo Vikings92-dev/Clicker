@@ -110,6 +110,7 @@
                     <h3 class="shop-section-title">Foreuses & Technologies</h3>
                     
                     <div class="shop-item-card">
+                        <img id="drill-shop-img" src="/public/PrismalineDrill.png" alt="Drill" class="drill-shop-img">
                         <div class="shop-item-info">
                             <div class="upgrade-title" id="drill-shop-title">Modèle : Drill en Bois</div>
                             <div class="shop-item-desc">Acheter une unité prête à être déployée ou stockée.</div>
@@ -120,6 +121,7 @@
                     </div>
 
                     <div class="shop-item-card research-panel">
+                        <img id="research-drill-img" src="/public/VeriditeDrill.png" alt="Prochain Drill" class="drill-shop-img">
                         <div class="shop-item-info">
                             <div class="upgrade-title">R&D : Palier Technologique</div>
                             <div class="research-next-level" id="research-next-level">Suivant : Drill en Pierre</div>
@@ -138,9 +140,13 @@
                         <div class="shop-item-desc" style="font-size: 0.8rem; color: #a0aec0;">
                             Remet en service une drill en panne (Prix: 5 000 $ / unité).
                         </div>
-                        <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                        <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <label for="buy-kit-qty" style="font-size: 0.85rem; color: var(--brass);">Quantité :</label>
                             <input type="number" id="buy-kit-qty" min="1" max="999" value="1" style="width: 65px; padding: 4px; text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border); color: #fff; border-radius: 4px;">
+                            <div class="shop-stock-pill">
+                                <span>En réserve :</span>
+                                <strong id="kit-shop-stock-count">0</strong>
+                            </div>
                         </div>
                     </div>
                     <button class="btn" id="buy-kit-btn" style="max-width: 180px;">
@@ -150,6 +156,7 @@
 
                 <!-- SECTION 3 : MATERIAUX DE REPARATION -->
                 <div class="shop-item-card" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px;">
+                    <img id="buy-mat-drill-img" src="/public/PrismalineDrill.png" alt="Drill" class="drill-shop-img">
                     <div class="shop-item-info" style="flex: 1; text-align: left;">
                         <div class="upgrade-title" style="margin: 0; font-size: 1rem;">Matériaux de réparation</div>
                         <div class="shop-item-desc" style="font-size: 0.8rem; color: #a0aec0;">
@@ -178,6 +185,49 @@
                         Acheter (<span id="mat-total-cost">500</span> $)
                     </button>
                 </div>
+
+                <!-- SECTION 4 : MODULES D'AMÉLIORATION -->
+                <div class="shop-section" style="margin-top: 10px;">
+                    <h3 class="shop-section-title">Modules d'Amélioration (Permanents)</h3>
+
+                    <div class="shop-item-card">
+                        <img src="/public/module_electricite.png" alt="Module d'Électricité" class="drill-shop-img">
+                        <div class="shop-item-info">
+                            <div class="upgrade-title" style="margin: 0; font-size: 1rem;">Module d'Électricité</div>
+                            <div class="shop-item-desc">Réduit la consommation d'électricité de 33% (Prix: 5 000 $ / unité).</div>
+                            <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <label for="buy-mod-elec-qty" style="font-size: 0.85rem; color: var(--brass);">Quantité :</label>
+                                <input type="number" id="buy-mod-elec-qty" min="1" max="999" value="1" style="width: 65px; padding: 4px; text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border); color: #fff; border-radius: 4px;">
+                                <div class="shop-stock-pill">
+                                    <span>En réserve :</span>
+                                    <strong id="mod-elec-shop-stock">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn" id="buy-mod-elec-btn" style="max-width: 180px;">
+                            Acheter (<span id="mod-elec-total-cost">5 000</span> $)
+                        </button>
+                    </div>
+
+                    <div class="shop-item-card">
+                        <img src="/public/module_solidite.png" alt="Module de Solidité" class="drill-shop-img">
+                        <div class="shop-item-info">
+                            <div class="upgrade-title" style="margin: 0; font-size: 1rem;">Module de Solidité</div>
+                            <div class="shop-item-desc">50% de chance de ne pas consommer de durabilité (Prix: 15 000 $ / unité).</div>
+                            <div style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <label for="buy-mod-solid-qty" style="font-size: 0.85rem; color: var(--brass);">Quantité :</label>
+                                <input type="number" id="buy-mod-solid-qty" min="1" max="999" value="1" style="width: 65px; padding: 4px; text-align: center; background: rgba(0,0,0,0.5); border: 1px solid var(--panel-border); color: #fff; border-radius: 4px;">
+                                <div class="shop-stock-pill">
+                                    <span>En réserve :</span>
+                                    <strong id="mod-solid-shop-stock">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn" id="buy-mod-solid-btn" style="max-width: 180px;">
+                            Acheter (<span id="mod-solid-total-cost">15 000</span> $)
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -198,16 +248,16 @@
                 </button>
                 <button type="button" class="repair-tab-btn" id="tab-repair-dura" onclick="switchRepairTab('dura')">
                     <span>❤️ Durabilité</span>
-                    <span class="tab-badge-sub">(Matériaux)</span>
+                    <span class="tab-badge-sub">(Mat. / Univ.)</span>
                 </button>
-                <button type="button" class="repair-tab-btn tab-univ" id="tab-repair-univ" onclick="switchRepairTab('univ')">
-                    <span>✨ Universel</span>
-                    <span class="tab-count-badge" id="repair-modal-univ">0</span>
+                <button type="button" class="repair-tab-btn" id="tab-repair-modules" onclick="switchRepairTab('modules')">
+                    <span>⚙️ Modules</span>
+                    <span class="tab-count-badge" id="repair-modal-modules">0</span>
                 </button>
             </div>
 
-            <!-- Atelier de craft pour caisses à outils -->
-            <div class="repair-craft-box">
+            <!-- Atelier de craft pour caisses à outils (onglet Dépannage uniquement) -->
+            <div class="repair-craft-box" id="repair-craft-box">
                 <div class="craft-left">
                     <div class="craft-title">
                         <span>🛠️ Établi : Assembler Caisse à outils</span>
@@ -225,6 +275,38 @@
                         Max
                     </button>
                 </div>
+            </div>
+
+            <!-- Option Réparation Universelle (onglet Durabilité uniquement) -->
+            <div id="repair-dura-univ-selector" class="dura-univ-selector-box" style="display: none;">
+                <label class="module-checkbox-card dura-univ-checkbox" for="chk-use-universal" id="label-use-universal">
+                    <input type="checkbox" id="chk-use-universal" onchange="renderRepairGrid()">
+                    <span style="font-size: 1.4rem; line-height: 1;">✨</span>
+                    <div class="module-checkbox-info">
+                        <strong>Utiliser une Réparation Universelle (100% dura, sans échec — ne dépanne pas les HS)</strong>
+                        <span>En stock : <strong id="repair-modal-univ" style="color: #50fa7b;">0</strong></span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Sélection des modules à installer (onglet Modules uniquement) -->
+            <div id="repair-modules-selector" class="modules-selector-box" style="display: none;">
+                <label class="module-checkbox-card" for="chk-module-elec">
+                    <input type="checkbox" id="chk-module-elec" checked onchange="renderRepairGrid()">
+                    <img src="/public/module_electricite.png" alt="Module d'Électricité" class="module-icon-sm">
+                    <div class="module-checkbox-info">
+                        <strong>Électricité (-33% conso)</strong>
+                        <span>En stock : <strong id="mod-elec-modal-stock" style="color: #8be9fd;">0</strong></span>
+                    </div>
+                </label>
+                <label class="module-checkbox-card" for="chk-module-solid">
+                    <input type="checkbox" id="chk-module-solid" onchange="renderRepairGrid()">
+                    <img src="/public/module_solidite.png" alt="Module de Solidité" class="module-icon-sm">
+                    <div class="module-checkbox-info">
+                        <strong>Solidité (50% sans perte dura)</strong>
+                        <span>En stock : <strong id="mod-solid-modal-stock" style="color: #50fa7b;">0</strong></span>
+                    </div>
+                </label>
             </div>
 
             <p id="repair-modal-instructions" style="font-size: 0.85rem; color: #a0aec0; margin: 0 0 10px 0;">
@@ -297,7 +379,7 @@
                                 <strong class="slot-value slot-parts" id="parts-stock-count">0</strong>
                             </div>
                         </div>
-                        <div class="vault-slot" title="Réparation Universelle (100% dura & déblocage panne)">
+                        <div class="vault-slot" title="Réparation Universelle (100% durabilité, ne répare pas les pannes HS)">
                             <span class="slot-icon">✨</span>
                             <div class="slot-data">
                                 <span class="slot-name">Univ.</span>
@@ -329,12 +411,32 @@
                             <strong class="mat-count" id="hangar-mat-4">0</strong>
                         </div>
                     </div>
+
+                    <!-- Modules d'amélioration en réserve -->
+                    <div class="vault-modules-row">
+                        <div class="vault-slot" title="Modules d'Électricité (-33% conso électrique)">
+                            <img src="/public/module_electricite.png" alt="Module Élec" class="module-icon-vault">
+                            <div class="slot-data">
+                                <span class="slot-name">Mod. Élec</span>
+                                <strong class="slot-value slot-parts" id="hangar-mod-elec">0</strong>
+                            </div>
+                        </div>
+                        <div class="vault-slot" title="Modules de Solidité (50% de chance d'éviter la perte de durabilité)">
+                            <img src="/public/module_solidite.png" alt="Module Solidité" class="module-icon-vault">
+                            <div class="slot-data">
+                                <span class="slot-name">Mod. Solid.</span>
+                                <strong class="slot-value slot-univ" id="hangar-mod-solid">0</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="hangar-inventory">
                 <div class="inventory-label">Drills en Stock (Régénération passive) :</div>
-                <div id="inventory-container" class="inventory-list"></div>
+                <div class="inventory-scroll-area">
+                    <div id="inventory-container" class="inventory-list"></div>
+                </div>
             </div>
         </div>
 

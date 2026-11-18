@@ -24,6 +24,10 @@ async function loadGameFromServer() {
             game.universalRepairs = savedGame.universalRepairs ?? 0;
             game.craftParts = savedGame.craftParts ?? 0;
             game.repairMateriaux = Array.isArray(savedGame.repairMateriaux) ? savedGame.repairMateriaux : [0,0,0,0,0];
+            game.modulesStock = {
+                electricite: (savedGame.modulesStock && savedGame.modulesStock.electricite) || 0,
+                solidite: (savedGame.modulesStock && savedGame.modulesStock.solidite) || 0
+            };
 
             if (Array.isArray(savedGame.phases)) {
                 game.phases.forEach(localPhase => {
@@ -53,6 +57,7 @@ async function loadGameFromServer() {
         } else {
             game.money = 0; game.pickaxeTier = 0; game.unlockedDrillTier = 0; game.drillCounterId = 0; game.inventory = [];
             game.repairKits = 0; game.universalRepairs = 0; game.craftParts = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
+            game.modulesStock = { electricite: 0, solidite: 0 };
             game.phases.forEach(p => { p.progress = 0; p.blockBrocken = 0; p.unlocked = (p.id === 1); p.activeDrills = []; });
             await saveGameToServer();
         }

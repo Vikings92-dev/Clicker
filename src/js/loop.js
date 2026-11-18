@@ -3,6 +3,13 @@ const dt = 0.1;
 const SECONDE = 10;
 let ticksCounter = 0;
 
+function applyDrillDuraLoss(drill, amount) {
+    if (drill.modules && drill.modules.solidite && Math.random() < 0.5) {
+        return;
+    }
+    drill.dura -= amount;
+}
+
 setInterval(() => {
     if (isGameFinished || isSuspendedByCaptcha) return;
 
@@ -37,7 +44,8 @@ setInterval(() => {
                     }
                 }
 
-                d.elec -= 1 * dt;
+                const elecMultiplier = (d.modules && d.modules.electricite) ? (1 - 0.33) : 1;
+                d.elec = Math.max(0, d.elec - (1 * dt * elecMultiplier));
                 combinedPower += d.power;
                 totalSpeed += d.speed;
             });
@@ -61,7 +69,7 @@ setInterval(() => {
                     if (d.elec <= 0) return;
                     const breakRoll = Math.random() * 100;
                     if (breakRoll > d.perteDura) {
-                        d.dura -= damage;
+                        applyDrillDuraLoss(d, damage);
                     }
                 });
             }
@@ -83,7 +91,7 @@ setInterval(() => {
                     if (d.elec <= 0) return;
                     const individualOverload = Math.max(1, p.baseResist / d.power);
                     const impactDamage = Math.min(30, 1.0 * Math.pow(individualOverload, 1.3));
-                    d.dura -= impactDamage * blocksBroken;
+                    applyDrillDuraLoss(d, impactDamage * blocksBroken);
                 });
 
                 if (p.id === 1) {

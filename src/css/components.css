@@ -107,12 +107,72 @@
     cursor: default;
     text-align: center;
     color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
 }
 
 .drill-card:hover {
     border-color: var(--copper-light);
     box-shadow: 0 0 10px rgba(217, 123, 72, 0.4);
     transform: translateY(-2px);
+}
+
+/* Images des drills (sprites 32x32) */
+.drill-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    display: block;
+    flex-shrink: 0;
+}
+
+.drill-shop-img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.drill-icon-mini {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.drill-deployed-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Badges des modules équipés sur une foreuse */
+.drill-modules-badges {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.module-badge-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(197, 160, 89, 0.45);
+    border-radius: 4px;
+    padding: 1px;
 }
 
 .stat-item {

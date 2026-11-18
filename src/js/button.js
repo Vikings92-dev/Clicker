@@ -123,7 +123,9 @@ buyDrillGlobalBtn.addEventListener('click', async () => {
             elec: template.maxElec,
             perteDura: template.pourcentagePerteDura,
             resistance: template.resistance,
-            isHS: template.isHS
+            isHS: template.isHS,
+            image: template.image,
+            modules: { electricite: false, solidite: false }
         });
         updateUI();
         await saveGameToServer();
@@ -214,6 +216,62 @@ if (buyMatBtn) {
         if (game.money >= totalCost) {
             game.money -= totalCost;
             game.repairMateriaux[matTemplate.tier] = (game.repairMateriaux[matTemplate.tier] || 0) + qty;
+
+            triggerPurchaseCooldown();
+            updateUI();
+            updateCosts();
+            await saveGameToServer();
+        }
+    });
+}
+
+if (buyModElecQtyInput) {
+    buyModElecQtyInput.addEventListener('input', () => {
+        if (buyModElecQtyInput.value < 1) buyModElecQtyInput.value = 1;
+        updateCosts();
+    });
+}
+
+if (buyModElecBtn) {
+    buyModElecBtn.addEventListener('click', async () => {
+        if (isGameFinished || isPurchaseOnCooldown) return;
+
+        const qty = Math.max(1, parseInt(buyModElecQtyInput.value) || 1);
+        const unitCost = (game.moduleTemplates && game.moduleTemplates.electricite.cost) || 5000;
+        const totalCost = unitCost * qty;
+
+        if (game.money >= totalCost) {
+            game.money -= totalCost;
+            if (!game.modulesStock) game.modulesStock = { electricite: 0, solidite: 0 };
+            game.modulesStock.electricite = (game.modulesStock.electricite || 0) + qty;
+
+            triggerPurchaseCooldown();
+            updateUI();
+            updateCosts();
+            await saveGameToServer();
+        }
+    });
+}
+
+if (buyModSolidQtyInput) {
+    buyModSolidQtyInput.addEventListener('input', () => {
+        if (buyModSolidQtyInput.value < 1) buyModSolidQtyInput.value = 1;
+        updateCosts();
+    });
+}
+
+if (buyModSolidBtn) {
+    buyModSolidBtn.addEventListener('click', async () => {
+        if (isGameFinished || isPurchaseOnCooldown) return;
+
+        const qty = Math.max(1, parseInt(buyModSolidQtyInput.value) || 1);
+        const unitCost = (game.moduleTemplates && game.moduleTemplates.solidite.cost) || 15000;
+        const totalCost = unitCost * qty;
+
+        if (game.money >= totalCost) {
+            game.money -= totalCost;
+            if (!game.modulesStock) game.modulesStock = { electricite: 0, solidite: 0 };
+            game.modulesStock.solidite = (game.modulesStock.solidite || 0) + qty;
 
             triggerPurchaseCooldown();
             updateUI();

@@ -174,6 +174,22 @@
 .vault-mat-chip.mat-tier-4 { border-color: rgba(189, 147, 249, 0.35); }
 .vault-mat-chip.mat-tier-4 .mat-label { color: #bd93f9; }
 
+/* Modules d'amélioration dans le coffre du hangar */
+.vault-modules-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.module-icon-vault {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
 /* =========================================
    ÉTABLI DE FABRICATION & ONGLETS DE RÉPARATION
    ========================================= */
@@ -239,6 +255,86 @@
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+/* Sélecteur de modules (checkboxes dans l'onglet Modules) */
+.modules-selector-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.module-checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(38, 28, 22, 0.95) 0%, rgba(20, 15, 12, 0.98) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+}
+
+.module-checkbox-card:hover {
+    border-color: var(--brass);
+    background: rgba(197, 160, 89, 0.12);
+}
+
+.module-checkbox-card:has(input:checked) {
+    border-color: #8be9fd;
+    box-shadow: 0 0 10px rgba(139, 233, 253, 0.25);
+}
+
+.module-checkbox-card input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #8be9fd;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.module-icon-sm {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.module-checkbox-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.78rem;
+    color: #cbd5e0;
+}
+
+.module-checkbox-info strong {
+    color: #fff;
+    font-size: 0.82rem;
+}
+
+.dura-univ-selector-box {
+    margin-bottom: 12px;
+}
+
+.dura-univ-checkbox:has(input:checked) {
+    border-color: #50fa7b;
+    box-shadow: 0 0 10px rgba(80, 250, 123, 0.25);
+}
+
+.dura-univ-checkbox input[type="checkbox"] {
+    accent-color: #50fa7b;
+}
+
+.module-checkbox-card.disabled-option {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .repair-tab-btn {

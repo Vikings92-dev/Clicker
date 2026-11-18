@@ -6,6 +6,29 @@ let lastValidClickTimestamp = 0;
 const MIN_CLICK_INTERVAL_MS = 1000 / 15;
 let overLimitSecondsStreak = 0;
 
+function getDrillImage(drill) {
+    if (!drill) return '';
+    const template = game.drillTemplates[drill.tier];
+    return (template && template.image) || drill.image || '';
+}
+
+function getDrillModulesKey(drill) {
+    const m = (drill && drill.modules) || {};
+    return `${m.electricite ? '1' : '0'}-${m.solidite ? '1' : '0'}`;
+}
+
+function renderDrillModulesBadges(drill) {
+    if (!drill || !drill.modules) return '';
+    let html = '';
+    if (drill.modules.electricite) {
+        html += `<img src="${game.moduleTemplates.electricite.image}" alt="Module Électricité" title="Module d'Électricité (-33% conso élec)" class="module-badge-icon">`;
+    }
+    if (drill.modules.solidite) {
+        html += `<img src="${game.moduleTemplates.solidite.image}" alt="Module Solidité" title="Module de Solidité (50% sans perte dura)" class="module-badge-icon">`;
+    }
+    return html ? `<span class="drill-modules-badges">${html}</span>` : '';
+}
+
 function getGlobalDrillCost() {
     const currentTemplate = game.drillTemplates[game.unlockedDrillTier];
     let totalOwned = game.inventory.filter(d => d.tier === game.unlockedDrillTier).length;
@@ -94,8 +117,9 @@ function openDeploymentMenu(phaseId) {
         card.id = `deploy-card-${d.uid}`;
 
         card.innerHTML = `
-            <div style="font-size: 1.5rem; line-height: 1;">⚙️</div>
+            <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
             <div style="font-weight: bold; font-size: 0.85rem; color: #fff; margin: 4px 0;">${d.name}</div>
+            ${renderDrillModulesBadges(d)}
             <div style="font-size: 0.75rem; color: #cbd5e0; line-height: 1.3;">
                 ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
                 ⚡ ${d.elec !== undefined ? Math.ceil(d.elec) : 'N/A'}
@@ -251,6 +275,10 @@ function updateCosts() {
     // Boutique Drills
     const currentTemplate = game.drillTemplates[game.unlockedDrillTier];
     drillShopTitle.innerText = `Modèle : ${currentTemplate.name}`;
+    if (drillShopImg && drillShopImg.getAttribute('src') !== currentTemplate.image) {
+        drillShopImg.setAttribute('src', currentTemplate.image);
+        drillShopImg.setAttribute('alt', currentTemplate.name);
+    }
     const drillCost = getGlobalDrillCost();
     drillShopCost.innerText = drillCost;
     buyDrillGlobalBtn.disabled = game.money < drillCost || isPurchaseOnCooldown;
@@ -262,11 +290,19 @@ function updateCosts() {
         const resChance = game.researchChances[game.unlockedDrillTier];
         
         researchNextLevelEl.innerText = `Suivant : ${nextTemplate.name}`;
+        if (researchDrillImg) {
+            researchDrillImg.style.display = '';
+            if (researchDrillImg.getAttribute('src') !== nextTemplate.image) {
+                researchDrillImg.setAttribute('src', nextTemplate.image);
+                researchDrillImg.setAttribute('alt', nextTemplate.name);
+            }
+        }
         researchCostEl.innerText = resCost;
         researchChanceEl.innerText = resChance;
         researchDrillBtn.disabled = game.money < resCost || isPurchaseOnCooldown;
     } else {
         researchNextLevelEl.innerText = "Technologie maximale atteinte !";
+        if (researchDrillImg) researchDrillImg.style.display = 'none';
         researchDrillBtn.innerText = "Recherche Terminée";
         researchDrillBtn.disabled = true;
     }
@@ -277,6 +313,7 @@ function updateCosts() {
     if (kitTotalCostEl) kitTotalCostEl.innerText = formatMoney(totalKitPrice);
     if (buyKitBtn) buyKitBtn.disabled = game.money < totalKitPrice || isPurchaseOnCooldown;
     if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
+    if (kitShopStockCountEl) kitShopStockCountEl.innerText = game.repairKits || 0;
 
     // Badges de stocks et craft
     const partsCountEl = document.getElementById('parts-stock-count');
@@ -328,11 +365,40 @@ function updateCosts() {
         }
     }
 
+    const activeMatType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
+    const activeMatTierIndex = parseInt(activeMatType.replace("T", "")) || 0;
+    const activeMatDrillTemplate = game.drillTemplates[activeMatTierIndex];
+    if (buyMatDrillImg && activeMatDrillTemplate && buyMatDrillImg.getAttribute('src') !== activeMatDrillTemplate.image) {
+        buyMatDrillImg.setAttribute('src', activeMatDrillTemplate.image);
+        buyMatDrillImg.setAttribute('alt', activeMatDrillTemplate.name);
+    }
+
     const matTemplate = (game.repairMateriauxTemplates && game.repairMateriauxTemplates.find(m => m.type === selectedType)) || { costBase: 500 };
     const qtyMat = buyMatQtyInput ? Math.max(1, parseInt(buyMatQtyInput.value) || 1) : 1;
     const totalMatPrice = matTemplate.costBase * qtyMat;
     if (matTotalCostEl) matTotalCostEl.innerText = formatMoney(totalMatPrice);
     if (buyMatBtn) buyMatBtn.disabled = game.money < totalMatPrice || isPurchaseOnCooldown;
+
+    // Gestion de l'achat et du stock des modules d'amélioration
+    const elecStock = (game.modulesStock && game.modulesStock.electricite) || 0;
+    const solidStock = (game.modulesStock && game.modulesStock.solidite) || 0;
+
+    const hangarModElecEl = document.getElementById('hangar-mod-elec');
+    const hangarModSolidEl = document.getElementById('hangar-mod-solid');
+    if (hangarModElecEl) hangarModElecEl.innerText = elecStock;
+    if (hangarModSolidEl) hangarModSolidEl.innerText = solidStock;
+    if (modElecShopStockEl) modElecShopStockEl.innerText = elecStock;
+    if (modSolidShopStockEl) modSolidShopStockEl.innerText = solidStock;
+
+    const qtyModElec = buyModElecQtyInput ? Math.max(1, parseInt(buyModElecQtyInput.value) || 1) : 1;
+    const totalModElecPrice = ((game.moduleTemplates && game.moduleTemplates.electricite.cost) || 5000) * qtyModElec;
+    if (modElecTotalCostEl) modElecTotalCostEl.innerText = formatMoney(totalModElecPrice);
+    if (buyModElecBtn) buyModElecBtn.disabled = game.money < totalModElecPrice || isPurchaseOnCooldown;
+
+    const qtyModSolid = buyModSolidQtyInput ? Math.max(1, parseInt(buyModSolidQtyInput.value) || 1) : 1;
+    const totalModSolidPrice = ((game.moduleTemplates && game.moduleTemplates.solidite.cost) || 15000) * qtyModSolid;
+    if (modSolidTotalCostEl) modSolidTotalCostEl.innerText = formatMoney(totalModSolidPrice);
+    if (buyModSolidBtn) buyModSolidBtn.disabled = game.money < totalModSolidPrice || isPurchaseOnCooldown;
 }
 
 function updateUI() {
@@ -345,27 +411,36 @@ function updateUI() {
     }
 
     // Mise à jour de l'inventaire
-    inventoryContainer.innerHTML = '';
     if (game.inventory.length === 0) {
-        if (inventoryContainer.innerHTML != '<span style="color: #6272a4; font-size:0.8rem;">Aucun drill au repos.</span>') {
-            inventoryContainer.innerHTML = '<span style="color: #6272a4; font-size:0.8rem;">Aucun drill au repos.</span>';
+        const emptyHtml = '<span style="color: #6272a4; font-size:0.8rem; grid-column: 1 / -1;">Aucun drill au repos.</span>';
+        if (inventoryContainer.innerHTML !== emptyHtml) {
+            inventoryContainer.innerHTML = emptyHtml;
         }
     } else {
         const existingCards = inventoryContainer.querySelectorAll('.drill-card');
-        if (existingCards.length !== game.inventory.length) {
+        const needsRebuild = existingCards.length !== game.inventory.length ||
+            game.inventory.some((d, idx) =>
+                existingCards[idx].id !== `inv-card${d.uid}` ||
+                existingCards[idx].dataset.modules !== getDrillModulesKey(d)
+            );
+        if (needsRebuild) {
             inventoryContainer.innerHTML = '';
-            game.inventory.forEach((d, i) => {
+            game.inventory.forEach((d) => {
                 const card = document.createElement('div');
                 card.className = "drill-card";
                 card.id = `inv-card${d.uid}`;
-                card.innerHTML = 
-                    `<strong>[${i}] ${d.name}</strong><br>
-                    <span class="dura-text">❤️ ${Math.ceil(d.dura)}/${d.maxDura}</span><br>
-                    <span class="elec-text">⚡ ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}</span>`;
+                card.dataset.modules = getDrillModulesKey(d);
+                card.innerHTML = `
+                    <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
+                    <strong>${d.name}</strong>
+                    ${renderDrillModulesBadges(d)}
+                    <span class="dura-text">❤️ ${Math.ceil(d.dura)}/${d.maxDura}</span>
+                    <span class="elec-text">⚡ ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}</span>
+                `;
                 inventoryContainer.appendChild(card);
             });
         } else {
-            game.inventory.forEach((d, i) => {
+            game.inventory.forEach((d) => {
                 const card = document.getElementById(`inv-card${d.uid}`);
                 if (card) {
                     const duraText = card.querySelector('.dura-text');
@@ -390,14 +465,25 @@ function updateUI() {
 
         if (deployedListEl) {
             const currentItems = deployedListEl.querySelectorAll('.drill-deployed-item');
-            if (currentItems.length !== p.activeDrills.length) {
+            const needsDeployedRebuild = currentItems.length !== p.activeDrills.length ||
+                p.activeDrills.some((d, idx) =>
+                    currentItems[idx].id !== `deployed-drill-${d.uid}` ||
+                    currentItems[idx].dataset.modules !== getDrillModulesKey(d)
+                );
+            if (needsDeployedRebuild) {
                 deployedListEl.innerHTML = '';
                 p.activeDrills.forEach(d => {
                     const item = document.createElement('div');
                     item.className = "drill-deployed-item";
                     item.id = `deployed-drill-${d.uid}`;
+                    item.dataset.modules = getDrillModulesKey(d);
                     item.innerHTML = `
-                        <span>🤖 <strong>${d.name}</strong> (<span class="deployed-dura">Dura: ${Math.ceil(d.dura)}/${d.maxDura}</span> | <span class="deployed-elec">Elec: ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}</span> | <span class="isHS"> HS: ${d.isHS ? 'Oui' : 'Non'}</span>)</span>
+                        <span class="drill-deployed-info">
+                            <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-icon-mini">
+                            <strong>${d.name}</strong>
+                            ${renderDrillModulesBadges(d)}
+                            (<span class="deployed-dura">Dura: ${Math.ceil(d.dura)}/${d.maxDura}</span> | <span class="deployed-elec">Elec: ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}</span> | <span class="isHS">HS: ${d.isHS ? 'Oui' : 'Non'}</span>)
+                        </span>
                         <button class="btn-mini btn-recall-action" data-uid="${d.uid}" data-phase="${p.id}">Rappeler</button>
                     `;
 
@@ -416,8 +502,10 @@ function updateUI() {
                     if (item) {
                         const duraEl = item.querySelector('.deployed-dura');
                         const elecEl = item.querySelector('.deployed-elec');
+                        const hsEl = item.querySelector('.isHS');
                         if (duraEl) duraEl.innerText = `Dura: ${Math.ceil(d.dura)}/${d.maxDura}`;
                         if (elecEl) elecEl.innerText = `Elec: ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}`;
+                        if (hsEl) hsEl.innerText = `HS: ${d.isHS ? 'Oui' : 'Non'}`;
                     }
                 });
             }
@@ -574,14 +662,17 @@ window.closeShopModal = closeShopModal;
 let currentRepairTab = 'hs';
 
 function switchRepairTab(tabName) {
-    currentRepairTab = tabName;
+    currentRepairTab = (tabName === 'univ') ? 'dura' : tabName;
     const btnHs = document.getElementById('tab-repair-hs');
     const btnDura = document.getElementById('tab-repair-dura');
-    const btnUniv = document.getElementById('tab-repair-univ');
+    const btnModules = document.getElementById('tab-repair-modules');
+    const craftBox = document.getElementById('repair-craft-box');
+    const duraUnivSelector = document.getElementById('repair-dura-univ-selector');
+    const modulesSelector = document.getElementById('repair-modules-selector');
     const instructions = document.getElementById('repair-modal-instructions');
 
     // Réinitialisation visuelle de tous les onglets
-    [btnHs, btnDura, btnUniv].forEach(btn => {
+    [btnHs, btnDura, btnModules].forEach(btn => {
         if (btn) {
             btn.classList.remove('active');
             btn.style.background = '#231d1b';
@@ -590,6 +681,10 @@ function switchRepairTab(tabName) {
         }
     });
 
+    if (craftBox) craftBox.style.display = (currentRepairTab === 'hs') ? 'flex' : 'none';
+    if (duraUnivSelector) duraUnivSelector.style.display = (currentRepairTab === 'dura') ? 'block' : 'none';
+    if (modulesSelector) modulesSelector.style.display = (currentRepairTab === 'modules') ? 'grid' : 'none';
+
     if (currentRepairTab === 'hs') {
         if (btnHs) {
             btnHs.classList.add('active');
@@ -597,7 +692,7 @@ function switchRepairTab(tabName) {
             btnHs.style.borderColor = 'var(--brass)';
             btnHs.style.color = '#fff';
         }
-        if (instructions) instructions.innerText = "Cliquez sur une foreuse en panne pour tenter une remise en service (consomme 1 Caisse à outils).";
+        if (instructions) instructions.innerText = "Cliquez sur une foreuse en panne (HS) pour tenter une remise en service (consomme 1 Caisse à outils, ne répare pas la durabilité).";
     } else if (currentRepairTab === 'dura') {
         if (btnDura) {
             btnDura.classList.add('active');
@@ -605,15 +700,14 @@ function switchRepairTab(tabName) {
             btnDura.style.borderColor = 'var(--brass)';
             btnDura.style.color = '#fff';
         }
-        if (instructions) instructions.innerText = "Cliquez sur une foreuse endommagée pour réparer 50% de sa durabilité (consomme 1 Matériau de son Tier).";
-    } else if (currentRepairTab === 'univ') {
-        if (btnUniv) {
-            btnUniv.classList.add('active');
-            btnUniv.style.background = 'linear-gradient(180deg, #2e7d32 0%, #1b4d21 100%)';
-            btnUniv.style.borderColor = '#50fa7b';
-            btnUniv.style.color = '#fff';
+    } else if (currentRepairTab === 'modules') {
+        if (btnModules) {
+            btnModules.classList.add('active');
+            btnModules.style.background = 'linear-gradient(180deg, #2b6cb0 0%, #1a365d 100%)';
+            btnModules.style.borderColor = '#8be9fd';
+            btnModules.style.color = '#fff';
         }
-        if (instructions) instructions.innerText = "Cliquez sur une foreuse pour restaurer 100% de sa durabilité et réparer toute panne sans risque d'échec (consomme 1 Réparation Universelle).";
+        if (instructions) instructions.innerText = "Cochez les modules souhaités puis cliquez sur une foreuse pour les installer à vie (irréversible).";
     }
 
     renderRepairGrid();
@@ -638,12 +732,47 @@ function renderRepairGrid() {
     const grid = document.getElementById('repair-drills-grid');
     const kitsCountEl = document.getElementById('repair-modal-kits');
     const univCountEl = document.getElementById('repair-modal-univ');
+    const modulesCountEl = document.getElementById('repair-modal-modules');
+    const modElecModalStockEl = document.getElementById('mod-elec-modal-stock');
+    const modSolidModalStockEl = document.getElementById('mod-solid-modal-stock');
     const craftPartsEl = document.getElementById('craft-parts-count');
 
+    const elecStock = (game.modulesStock && game.modulesStock.electricite) || 0;
+    const solidStock = (game.modulesStock && game.modulesStock.solidite) || 0;
+    const univStock = game.universalRepairs || 0;
+
     if (kitsCountEl) kitsCountEl.innerText = game.repairKits || 0;
-    if (univCountEl) univCountEl.innerText = game.universalRepairs || 0;
+    if (univCountEl) univCountEl.innerText = univStock;
+    if (modulesCountEl) modulesCountEl.innerText = elecStock + solidStock;
+    if (modElecModalStockEl) modElecModalStockEl.innerText = elecStock;
+    if (modSolidModalStockEl) modSolidModalStockEl.innerText = solidStock;
     if (craftPartsEl) craftPartsEl.innerText = game.craftParts || 0;
     if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
+    if (kitShopStockCountEl) kitShopStockCountEl.innerText = game.repairKits || 0;
+
+    // Gestion de la checkbox Réparation Universelle (active uniquement tant qu'on en a)
+    const chkUseUniv = document.getElementById('chk-use-universal');
+    const labelUseUniv = document.getElementById('label-use-universal');
+    if (chkUseUniv) {
+        if (univStock <= 0) {
+            chkUseUniv.checked = false;
+            chkUseUniv.disabled = true;
+            if (labelUseUniv) labelUseUniv.classList.add('disabled-option');
+        } else {
+            chkUseUniv.disabled = false;
+            if (labelUseUniv) labelUseUniv.classList.remove('disabled-option');
+        }
+    }
+    const useUniversal = Boolean(chkUseUniv && chkUseUniv.checked && univStock > 0);
+
+    if (currentRepairTab === 'dura') {
+        const instructions = document.getElementById('repair-modal-instructions');
+        if (instructions) {
+            instructions.innerText = useUniversal
+                ? "Mode Universel actif : cliquez sur une foreuse endommagée pour remettre sa durabilité à 100% sans risque d'échec (ne répare pas les pannes HS)."
+                : "Cliquez sur une foreuse endommagée pour réparer 50% de sa durabilité (consomme 1 Matériau de son Tier).";
+        }
+    }
 
     if (!grid) return;
 
@@ -666,7 +795,7 @@ function renderRepairGrid() {
             card.style.cursor = canRepair ? "pointer" : "not-allowed";
 
             card.innerHTML = `
-                <div style="font-size: 1.3rem;">🔧</div>
+                <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
                 <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
                 <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
                     ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
@@ -682,52 +811,150 @@ function renderRepairGrid() {
             }
         } else if (currentRepairTab === 'dura') {
             const canRepair = d.dura < d.maxDura;
-            const matStock = (game.repairMateriaux && game.repairMateriaux[d.tier]) || 0;
-            const matName = template.name ? template.name.replace("Drill en ", "") : `T${d.tier}`;
-            card.style.opacity = canRepair ? "1" : "0.5";
-            card.style.cursor = canRepair ? "pointer" : "not-allowed";
+            if (useUniversal) {
+                card.style.opacity = canRepair ? "1" : "0.5";
+                card.style.cursor = canRepair ? "pointer" : "not-allowed";
 
-            card.innerHTML = `
-                <div style="font-size: 1.3rem;">❤️</div>
-                <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
-                <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
-                    ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
-                    Mat T${d.tier} (${matName}) : <strong style="color: ${matStock > 0 ? '#50fa7b' : '#ff5555'};">${matStock} en stock</strong>
-                </div>
-                <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || matStock <= 0) ? 'disabled' : ''}>
-                    ${canRepair ? '+50% Dura' : 'Intact'}
-                </button>
-            `;
+                card.innerHTML = `
+                    <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
+                    <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
+                    <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
+                        ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
+                        <strong style="color: #50fa7b;">✨ 100% Dura (0% échec)</strong>
+                    </div>
+                    <button class="btn-mini btn-action-deploy" style="margin-top: 4px; width: 100%;" ${!canRepair ? 'disabled' : ''}>
+                        ${canRepair ? '✨ 100% Dura' : 'Intact'}
+                    </button>
+                `;
 
-            if (canRepair) {
-                card.addEventListener('click', () => applyDuraRepair(d.uid, chance));
+                if (canRepair) {
+                    card.addEventListener('click', () => applyUniversalRepair(d.uid));
+                }
+            } else {
+                const matStock = (game.repairMateriaux && game.repairMateriaux[d.tier]) || 0;
+                const matName = template.name ? template.name.replace("Drill en ", "") : `T${d.tier}`;
+                card.style.opacity = canRepair ? "1" : "0.5";
+                card.style.cursor = canRepair ? "pointer" : "not-allowed";
+
+                card.innerHTML = `
+                    <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
+                    <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
+                    <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
+                        ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
+                        Mat T${d.tier} (${matName}) : <strong style="color: ${matStock > 0 ? '#50fa7b' : '#ff5555'};">${matStock} en stock</strong>
+                    </div>
+                    <button class="btn-mini" style="margin-top: 4px; width: 100%;" ${(!canRepair || matStock <= 0) ? 'disabled' : ''}>
+                        ${canRepair ? '+50% Dura' : 'Intact'}
+                    </button>
+                `;
+
+                if (canRepair) {
+                    card.addEventListener('click', () => applyDuraRepair(d.uid, chance));
+                }
             }
-        } else if (currentRepairTab === 'univ') {
-            const needsRepair = d.isHS || d.dura < d.maxDura;
-            const hasUniv = (game.universalRepairs || 0) > 0;
-            card.style.opacity = needsRepair ? "1" : "0.5";
-            card.style.cursor = needsRepair ? "pointer" : "not-allowed";
+        } else if (currentRepairTab === 'modules') {
+            const chkElec = document.getElementById('chk-module-elec');
+            const chkSolid = document.getElementById('chk-module-solid');
+            const selectedModules = [];
+            if (chkElec && chkElec.checked) selectedModules.push('electricite');
+            if (chkSolid && chkSolid.checked) selectedModules.push('solidite');
 
+            const hasElec = Boolean(d.modules && d.modules.electricite);
+            const hasSolid = Boolean(d.modules && d.modules.solidite);
+            const isFull = hasElec && hasSolid;
+            const toInstall = selectedModules.filter(m => !(d.modules && d.modules[m]));
+            const hasEnoughStock = toInstall.length > 0 && toInstall.every(m => ((game.modulesStock && game.modulesStock[m]) || 0) > 0);
+            const canInstall = !isFull && toInstall.length > 0 && hasEnoughStock;
+
+            let btnLabel = "Équiper";
+            if (isFull) {
+                btnLabel = "Complet (2/2)";
+            } else if (selectedModules.length === 0) {
+                btnLabel = "Cocher un module";
+            } else if (toInstall.length === 0) {
+                btnLabel = "Déjà équipé";
+            } else if (!hasEnoughStock) {
+                btnLabel = "Stock insuffisant";
+            } else if (toInstall.length === 2) {
+                btnLabel = "Équiper x2";
+            } else {
+                btnLabel = toInstall[0] === 'electricite' ? "Équiper Élec" : "Équiper Solidité";
+            }
+
+            card.style.opacity = canInstall ? "1" : "0.6";
+            card.style.cursor = canInstall ? "pointer" : "not-allowed";
+
+            const badgesHtml = renderDrillModulesBadges(d) || '<span style="font-size: 0.7rem; color: #718096;">Aucun module</span>';
             card.innerHTML = `
-                <div style="font-size: 1.3rem;">✨</div>
+                <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
                 <div style="font-weight: bold; font-size: 0.82rem; color: #fff;">${d.name}</div>
-                <div style="font-size: 0.72rem; color: #cbd5e0; line-height: 1.2;">
-                    ❤️ ${Math.ceil(d.dura)}/${d.maxDura}<br>
-                    État: <strong style="color: ${d.isHS ? '#ff5555' : '#50fa7b'};">${d.isHS ? 'HS' : 'OK'}</strong>
+                <div style="min-height: 20px; display: flex; align-items: center; justify-content: center;">
+                    ${badgesHtml}
                 </div>
-                <button class="btn-mini btn-action-deploy" style="margin-top: 4px; width: 100%;" ${(!needsRepair || !hasUniv) ? 'disabled' : ''}>
-                    ${needsRepair ? 'Remettre à Neuf' : 'Déjà à 100%'}
+                <button class="btn-mini btn-action-deploy" style="margin-top: 4px; width: 100%;" ${!canInstall ? 'disabled' : ''}>
+                    ${btnLabel}
                 </button>
             `;
 
-            if (needsRepair) {
-                card.addEventListener('click', () => applyUniversalRepair(d.uid));
+            if (canInstall) {
+                card.addEventListener('click', () => installSelectedModules(d.uid));
             }
         }
 
         grid.appendChild(card);
     });
 }
+window.renderRepairGrid = renderRepairGrid;
+
+function installSelectedModules(drillUid) {
+    const drill = game.inventory.find(d => d.uid === drillUid);
+    if (!drill) return;
+
+    const chkElec = document.getElementById('chk-module-elec');
+    const chkSolid = document.getElementById('chk-module-solid');
+    const selectedModules = [];
+    if (chkElec && chkElec.checked) selectedModules.push('electricite');
+    if (chkSolid && chkSolid.checked) selectedModules.push('solidite');
+
+    if (selectedModules.length === 0) {
+        alert("Veuillez cocher au moins un module à installer.");
+        return;
+    }
+
+    if (!drill.modules) {
+        drill.modules = { electricite: false, solidite: false };
+    }
+
+    const toInstall = selectedModules.filter(m => !drill.modules[m]);
+    if (toInstall.length === 0) {
+        alert(`${drill.name} possède déjà les modules cochés.`);
+        return;
+    }
+
+    if (!game.modulesStock) {
+        game.modulesStock = { electricite: 0, solidite: 0 };
+    }
+
+    const missing = toInstall.filter(m => (game.modulesStock[m] || 0) <= 0);
+    if (missing.length > 0) {
+        const names = missing.map(m => game.moduleTemplates[m].name).join(', ');
+        alert(`Stock insuffisant pour : ${names}. Achetez-en dans le Magasin.`);
+        return;
+    }
+
+    toInstall.forEach(m => {
+        game.modulesStock[m]--;
+        drill.modules[m] = true;
+    });
+
+    const installedNames = toInstall.map(m => game.moduleTemplates[m].name).join(' + ');
+    alert(`⚙️ ${installedNames} installé(s) à vie sur ${drill.name} !`);
+
+    renderRepairGrid();
+    updateUI();
+    saveGameToServer();
+}
+window.installSelectedModules = installSelectedModules;
 
 function applyHsRepair(drillUid, chance) {
     if (!game.repairKits || game.repairKits <= 0) {
@@ -788,16 +1015,15 @@ function applyUniversalRepair(drillUid) {
     const drill = game.inventory.find(d => d.uid === drillUid);
     if (!drill) return;
 
-    if (!drill.isHS && drill.dura >= drill.maxDura) {
-        alert(`${drill.name} est déjà en parfait état !`);
+    if (drill.dura >= drill.maxDura) {
+        alert(`${drill.name} a déjà 100% de durabilité !`);
         return;
     }
 
     game.universalRepairs--;
-    drill.isHS = false;
     drill.dura = drill.maxDura;
 
-    alert(`✨ Restauration Universelle réussie sur ${drill.name} ! Durabilité à 100% et panne levée.`);
+    alert(`✨ Réparation Universelle réussie sur ${drill.name} ! Durabilité restaurée à 100%.`);
 
     renderRepairGrid();
     updateUI();
