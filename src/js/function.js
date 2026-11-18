@@ -54,7 +54,7 @@ function initPhases() {
                     <span class="phase-blocks">(${p.blocks})</span>
                 </div>
                 <div id="phase-unlock-status-${p.id}" style="font-size:0.9rem; color:#ff5555;">
-                    ${p.unlocked ? '' : `Déblocage : ${p.reqMoney} $`}
+                    ${p.unlocked ? '' : `Déblocage : ${formatMoney(p.reqMoney)} $`}
                 </div>
             </div>
             <div class="phase-controls" id="controls-${p.id}" style="display: none;">
@@ -66,8 +66,8 @@ function initPhases() {
                 <div class="drill-stats-zone">
                     <div class="stat-item">Drills Actifs: <span id="drill-count-${p.id}">0</span></div>
                     <div class="stat-item">Puissance totale: <span id="drill-power-${p.id}">0</span></div>
-                    <div class="stat-item">Résistance: <span>${p.baseResist}</span></div>
-                    <div class="stat-item" id="phase-reward-${p.id}">Gain/Bloc: <span>${p.reward} $</span></div>
+                    <div class="stat-item">Résistance: <span>${formatMoney(p.baseResist)}</span></div>
+                    <div class="stat-item" id="phase-reward-${p.id}">Gain/Bloc: <span>${formatMoney(p.reward)} $</span></div>
                 </div>
             </div>  
             <div id="deployed-list-${p.id}" class="drill-deployed-list" style="display: none;"></div>
@@ -265,7 +265,7 @@ function updateCosts() {
     // Pioche
     if (game.pickaxeTier < game.pickaxeCosts.length) {
         const cost = game.pickaxeCosts[game.pickaxeTier];
-        upgradePickaxeBtn.innerText = `Améliorer Pioche (Coût: ${cost} $)`;
+        upgradePickaxeBtn.innerText = `Améliorer Pioche (Coût: ${formatMoney(cost)} $)`;
         upgradePickaxeBtn.disabled = game.money < cost || isPurchaseOnCooldown;
     } else {
         upgradePickaxeBtn.innerText = "Niveau Max Atteint";
@@ -280,7 +280,7 @@ function updateCosts() {
         drillShopImg.setAttribute('alt', currentTemplate.name);
     }
     const drillCost = getGlobalDrillCost();
-    drillShopCost.innerText = drillCost;
+    drillShopCost.innerText = formatMoney(drillCost);
     buyDrillGlobalBtn.disabled = game.money < drillCost || isPurchaseOnCooldown;
 
     // Gestion du module de Recherche (R&D)
@@ -297,7 +297,7 @@ function updateCosts() {
                 researchDrillImg.setAttribute('alt', nextTemplate.name);
             }
         }
-        researchCostEl.innerText = resCost;
+        researchCostEl.innerText = formatMoney(resCost);
         researchChanceEl.innerText = resChance;
         researchDrillBtn.disabled = game.money < resCost || isPurchaseOnCooldown;
     } else {
@@ -461,7 +461,7 @@ function updateUI() {
         let totalPower = 0;
         p.activeDrills.forEach(d => totalPower += d.power);
         if (countEl) countEl.innerText = p.activeDrills.length;
-        if (powerEl) powerEl.innerText = totalPower.toFixed(1);
+        if (powerEl) powerEl.innerText = formatMoney(totalPower);
 
         if (deployedListEl) {
             const currentItems = deployedListEl.querySelectorAll('.drill-deployed-item');
