@@ -145,6 +145,7 @@ researchDrillBtn.addEventListener('click', async () => {
         
         if (roll <= chance) {
             game.unlockedDrillTier++;
+            if (typeof refreshShopMatSelect === 'function') refreshShopMatSelect();
             alert(`🎉 Succès ! Vous avez débloqué les technologies pour fabriquer : ${game.drillTemplates[game.unlockedDrillTier].name} !`);
         } else {
             alert(`❌ Échec de la recherche ! Les prototypes ont explosé. Vos scientifiques demandent de nouveaux fonds pour retenter (${roll}/100 requis <= ${chance}).`);
@@ -217,6 +218,7 @@ if (buyMatBtn) {
             game.money -= totalCost;
             game.repairMateriaux[matTemplate.tier] = (game.repairMateriaux[matTemplate.tier] || 0) + qty;
 
+            if (typeof refreshShopMatSelect === 'function') refreshShopMatSelect();
             triggerPurchaseCooldown();
             updateUI();
             updateCosts();

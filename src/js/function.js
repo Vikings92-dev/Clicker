@@ -249,6 +249,30 @@ window.recallDrillFromPhase = recallDrillFromPhase;
 
 let lastRenderedUnlockedTier = -1;
 
+function refreshShopMatSelect() {
+    if (!buyMatTypeSelect) return;
+
+    const currentValue = buyMatTypeSelect.value || "T0";
+    Array.from(buyMatTypeSelect.options).forEach((opt, index) => {
+        const template = game.drillTemplates[index];
+        const baseName = template ? template.name : `Tier ${index}`;
+        const isUnlocked = index <= game.unlockedDrillTier;
+        const count = (game.repairMateriaux && game.repairMateriaux[index]) || 0;
+        const text = isUnlocked ? `${baseName} (Stock: ${count})` : `${baseName} (Verrouillé)`;
+
+        if (opt.textContent !== text) opt.textContent = text;
+        if (opt.disabled !== !isUnlocked) opt.disabled = !isUnlocked;
+    });
+
+    const selectedTierIndex = parseInt(currentValue.replace("T", "")) || 0;
+    if (buyMatTypeSelect.options[selectedTierIndex] && buyMatTypeSelect.options[selectedTierIndex].disabled) {
+        buyMatTypeSelect.value = `T${game.unlockedDrillTier}`;
+    }
+
+    lastRenderedUnlockedTier = game.unlockedDrillTier;
+}
+window.refreshShopMatSelect = refreshShopMatSelect;
+
 function updateCosts() {
     if (isGameFinished) return;
 
@@ -339,6 +363,10 @@ function updateCosts() {
     }
 
     // Gestion de l'achat de matériaux & affichage des stocks dans le Magasin
+    if (lastRenderedUnlockedTier !== game.unlockedDrillTier) {
+        refreshShopMatSelect();
+    }
+
     const selectedType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
     const selectedTierIndex = parseInt(selectedType.replace("T", "")) || 0;
     const selectedStock = (game.repairMateriaux && game.repairMateriaux[selectedTierIndex]) || 0;
@@ -348,32 +376,13 @@ function updateCosts() {
         selectedStockBadge.innerText = selectedStock;
     }
 
-    if (buyMatTypeSelect) {
-        Array.from(buyMatTypeSelect.options).forEach((opt, index) => {
-            const template = game.drillTemplates[index];
-            const baseName = template ? template.name : `Tier ${index}`;
-            const isUnlocked = index <= game.unlockedDrillTier;
-            const count = (game.repairMateriaux && game.repairMateriaux[index]) || 0;
-            const text = isUnlocked ? `${baseName} (Stock: ${count})` : `${baseName} (Verrouillé)`;
-
-            if (opt.innerText !== text) opt.innerText = text;
-            opt.disabled = !isUnlocked;
-        });
-
-        if (buyMatTypeSelect.options[selectedTierIndex] && buyMatTypeSelect.options[selectedTierIndex].disabled) {
-            buyMatTypeSelect.value = `T${game.unlockedDrillTier}`;
-        }
-    }
-
-    const activeMatType = buyMatTypeSelect ? buyMatTypeSelect.value : "T0";
-    const activeMatTierIndex = parseInt(activeMatType.replace("T", "")) || 0;
-    const activeMatDrillTemplate = game.drillTemplates[activeMatTierIndex];
+    const activeMatDrillTemplate = game.drillTemplates[selectedTierIndex];
     if (buyMatDrillImg && activeMatDrillTemplate && buyMatDrillImg.getAttribute('src') !== activeMatDrillTemplate.image) {
         buyMatDrillImg.setAttribute('src', activeMatDrillTemplate.image);
         buyMatDrillImg.setAttribute('alt', activeMatDrillTemplate.name);
     }
 
-    const matTemplate = (game.repairMateriauxTemplates && game.repairMateriauxTemplates.find(m => m.type === selectedType)) || { costBase: 500 };
+    const matTemplate = (game.repairMateriauxTemplates && game.repairMateriauxTemplates.find(m => m.type === selectedType)) || { costBase: 100 };
     const qtyMat = buyMatQtyInput ? Math.max(1, parseInt(buyMatQtyInput.value) || 1) : 1;
     const totalMatPrice = matTemplate.costBase * qtyMat;
     if (matTotalCostEl) matTotalCostEl.innerText = formatMoney(totalMatPrice);
@@ -646,6 +655,7 @@ function openShopModal() {
     const modal = document.getElementById('shop-modal');
     if (modal) {
         modal.style.display = 'flex';
+        refreshShopMatSelect();
         updateCosts();
     }
 }
