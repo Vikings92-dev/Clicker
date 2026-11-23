@@ -103,11 +103,8 @@ function initPhases() {
                     <span class="phase-name" id="phase-title-text-${p.id}">${p.name}</span>
                     <span class="phase-blocks">(${p.blocks})</span>
                 </div>
-                <div class="phase-header-right">
-                    ${displaySwitcherHtml}
-                    <div id="phase-unlock-status-${p.id}" style="font-size:0.9rem; color:#ff5555;">
-                        ${p.unlocked ? '' : `Déblocage : ${formatMoney(p.reqMoney)} $`}
-                    </div>
+                <div id="phase-unlock-status-${p.id}">
+                    ${p.unlocked ? '' : `<button type="button" class="btn-mini btn-action-deploy" id="unlock-phase-btn-${p.id}" disabled>Débloquer (${formatMoney(p.reqMoney)} $)</button>`}
                 </div>
             </div>
             <div class="phase-controls" id="controls-${p.id}" style="display: none;">
@@ -134,6 +131,13 @@ function initPhases() {
             <img id="image-phase-${p.id}" src="${getPhaseBgImage(p)}" alt="Fond phases" class="phase-bg-img">
         `;
         phasesContainer.appendChild(row);
+        const unlockBtn = document.getElementById(`unlock-phase-btn-${p.id}`);
+        if (unlockBtn) {
+            unlockBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                unlockPhase(p.id);
+            });
+        }
         document.getElementById(`deploy-to-${p.id}`).addEventListener('click', (e) => {
             e.stopPropagation();
             openDeploymentMenu(p.id)
@@ -329,20 +333,29 @@ window.refreshShopMatSelect = refreshShopMatSelect;
 function updateCosts() {
     if (isGameFinished) return;
 
-    game.phases.forEach(p => {
-        if (!p.unlocked && game.money >= p.reqMoney) {
-            p.unlocked = true;
+    game.phases.forEach((p, idx) => {
+        if (!p.unlocked) {
             const row = document.getElementById(`phase-${p.id}`);
-            if (row) {
-                row.classList.remove('locked');
-                row.querySelectorAll('.display-opt-btn').forEach(btn => {
-                    btn.disabled = false;
-                });
+            const unlockBtn = document.getElementById(`unlock-phase-btn-${p.id}`);
+            if (unlockBtn) {
+                const isPrevUnlocked = idx === 0 || game.phases[idx - 1].unlocked;
+                const canAfford = game.money >= p.reqMoney;
+                const isUnlockable = isPrevUnlocked && canAfford;
+
+                unlockBtn.disabled = !isUnlockable || isPurchaseOnCooldown;
+
+                if (isUnlockable) {
+                    if (row) row.classList.add('unlockable');
+                    unlockBtn.classList.add('btn-unlock-ready');
+                    unlockBtn.innerText = `🔓 Débloquer (${formatMoney(p.reqMoney)} $)`;
+                } else {
+                    if (row) row.classList.remove('unlockable');
+                    unlockBtn.classList.remove('btn-unlock-ready');
+                    unlockBtn.innerText = isPrevUnlocked
+                        ? `🔒 Débloquer (${formatMoney(p.reqMoney)} $)`
+                        : `🔒 Phase ${p.id - 1} requise (${formatMoney(p.reqMoney)} $)`;
+                }
             }
-            const deployBtn = document.getElementById(`deploy-to-${p.id}`);
-            if (deployBtn) deployBtn.disabled = false;
-            const status = document.getElementById(`phase-unlock-status-${p.id}`);
-            if (status) status.innerText = 'Débloqué !';
         }
     });
 
@@ -671,6 +684,10 @@ function triggerAutoclickerAlert() {
 
     if (window.turnstile) {
         window.turnstile.reset('#cf-turnstile-container');
+    }
+
+    if (typeof reportAutoclickerWarnToServer === 'function') {
+        reportAutoclickerWarnToServer('autoclick_detected');
     }
 }
 
@@ -1182,3 +1199,34 @@ function showFloatingLootText(event, text, color) {
     }, 1200);
 }
 window.showFloatingLootText = showFloatingLootText;
+
+async function unlockPhase(phaseId) {
+    if (isGameFinished || isPurchaseOnCooldown) return;
+
+    const idx = game.phases.findIndex(p => p.id === phaseId);
+    if (idx === -1) return;
+
+    const phase = game.phases[idx];
+    const isPrevUnlocked = idx === 0 || game.phases[idx - 1].unlocked;
+
+    if (!phase.unlocked && isPrevUnlocked && game.money >= phase.reqMoney) {
+        game.money -= phase.reqMoney;
+        phase.unlocked = true;
+
+        const row = document.getElementById(`phase-${phase.id}`);
+        if (row) {
+            row.classList.remove('locked');
+            row.classList.remove('unlockable');
+        }
+
+        const status = document.getElementById(`phase-unlock-status-${phase.id}`);
+        if (status) status.innerHTML = '<span style="font-size:0.9rem; color:#50fa7b;">Débloqué !</span>';
+
+        const deployBtn = document.getElementById(`deploy-to-${phase.id}`);
+        if (deployBtn) deployBtn.disabled = false;
+
+        triggerPurchaseCooldown();
+        updateUI();
+        await saveGameToServer();
+    }
+}

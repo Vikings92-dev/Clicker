@@ -45,10 +45,27 @@
         </div>
     </div>
 
+    <div id="timeout-screen">
+        <div class="login-box timeout-box">
+            <h2 class="timeout-title">⏳ EXCLUSION TEMPORAIRE</h2>
+            <p id="timeout-reason-text" class="timeout-subtitle">
+                Limite d'avertissements atteinte (3/3 en moins d'une heure).
+            </p>
+            <div class="timeout-timer-card">
+                <div class="timeout-timer-label">Temps restant avant reprise :</div>
+                <div id="timeout-countdown" class="timeout-countdown">00m 00s</div>
+            </div>
+            <p class="timeout-note">
+                Votre progression est mise en pause. Le jeu reprendra automatiquement à la fin du compte à rebours.
+            </p>
+        </div>
+    </div>
+
     <!-- Popup d'alerte CPS / Auto-clicker -->
     <div id="autoclicker-popup">
         <div class="login-box autoclicker-box">
             <h2 class="autoclicker-title">Autoclicker détecté !</h2>
+            <p id="autoclicker-warn-status" class="autoclicker-warn-badge">Avertissement : 1 / 3 (expire après 1h)</p>
             <p class="autoclicker-text">Veuillez désactiver tout outil d'automatisation ou modérer vos clics pour continuer.</p>
             <p class="autoclicker-text">Vérification requise pour prouver que vous n'êtes pas un robot.</p>
 
@@ -332,6 +349,9 @@
                 <div>Argent Global</div>
                 <div class="money-display" id="money">0.00 $</div>
                 <div id="mps">Revenu passif : 0.00 $/s</div>
+                <div id="player-warn-badge" class="warn-status-pill" style="display: none;">
+                    ⚠️ Avertissements actifs : <strong id="player-warn-count">0</strong> / 3 (1h)
+                </div>
             </div>
         </div>
 

@@ -72,6 +72,11 @@ async function loadGameFromServer() {
             });
             await saveGameToServer();
         }
+
+        if (data.timeout) {
+            activateTimeoutScreen(data.timeout);
+        }
+
     } catch (error) { console.error(error); }
     finally { initPhases(); updateUI(); updatePhasePaliersVisuals();}
 }
@@ -86,3 +91,98 @@ document.getElementById('login-btn').addEventListener('click', () => {
         setInterval(saveGameToServer, 30000);
     } else { alert("Pseudonyme trop court."); }
 });
+
+let activeTimeoutInterval = null;
+let currentActiveWarns = 0;
+
+function updateWarnBadgeUI(warnCount) {
+    currentActiveWarns = warnCount || 0;
+    const badge = document.getElementById('player-warn-badge');
+    const countEl = document.getElementById('player-warn-count');
+    const popupStatusEl = document.getElementById('autoclicker-warn-status');
+
+    if (countEl) countEl.innerText = currentActiveWarns;
+    if (badge) {
+        badge.style.display = currentActiveWarns > 0 ? 'block' : 'none';
+    }
+    if (popupStatusEl) {
+        popupStatusEl.innerText = `Avertissement : ${currentActiveWarns} / 3 (expire après 1h)`;
+    }
+}
+window.updateWarnBadgeUI = updateWarnBadgeUI;
+
+function formatRemainingTime(ms) {
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const pad = (n) => String(n).padStart(2, '0');
+    if (days > 0) return `${days}j ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+    if (hours > 0) return `${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+    return `${pad(minutes)}m ${pad(seconds)}s`;
+}
+
+function activateTimeoutScreen(timeoutData) {
+    if (!timeoutData || !timeoutData.remaining_seconds || timeoutData.remaining_seconds <= 0) return;
+
+    // Ferme la popup Turnstile si elle était ouverte
+    const acPopup = document.getElementById('autoclicker-popup');
+    if (acPopup) acPopup.style.display = 'none';
+
+    isSuspendedByCaptcha = true; // Met en pause loop.js et clickBtn
+
+    const screen = document.getElementById('timeout-screen');
+    const reasonEl = document.getElementById('timeout-reason-text');
+    const countdownEl = document.getElementById('timeout-countdown');
+
+    if (reasonEl) {
+        reasonEl.innerText = `Exclusion temporaire #${timeoutData.timeout_number || 1} — Limite de 3 avertissements atteinte.`;
+    }
+    if (screen) screen.style.display = 'flex';
+
+    const expiresAtMs = Date.now() + (timeoutData.remaining_seconds * 1000);
+
+    if (activeTimeoutInterval) clearInterval(activeTimeoutInterval);
+
+    const tickTimer = () => {
+        const remaining = expiresAtMs - Date.now();
+        if (remaining <= 0) {
+            clearInterval(activeTimeoutInterval);
+            activeTimeoutInterval = null;
+            if (screen) screen.style.display = 'none';
+            isSuspendedByCaptcha = false;
+            updateWarnBadgeUI(0);
+            return;
+        }
+        if (countdownEl) {
+            countdownEl.innerText = formatRemainingTime(remaining);
+        }
+    };
+
+    tickTimer();
+    activeTimeoutInterval = setInterval(tickTimer, 1000);
+}
+window.activateTimeoutScreen = activateTimeoutScreen;
+
+async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
+    if (!PLAYER_NAME) return;
+    try {
+        const response = await fetch(`${API_URL}/warn`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: PLAYER_NAME, reason })
+        });
+        const data = await response.json();
+
+        if (data.status === "timed_out" && data.timeout) {
+            activateTimeoutScreen(data.timeout);
+        } else if (data.status === "warned") {
+            updateWarnBadgeUI(data.active_warns);
+        }
+    } catch (e) {
+        console.error("Erreur lors de l'envoi du warn :", e);
+    }
+}
+window.reportAutoclickerWarnToServer = reportAutoclickerWarnToServer;

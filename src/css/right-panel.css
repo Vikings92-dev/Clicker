@@ -221,3 +221,32 @@
     font-size: 0.85rem;
     font-family: var(--font-mono);
 }
+
+.phase-row.unlockable {
+    opacity: 1;
+    border: 2px solid #50fa7b;
+    background: linear-gradient(135deg, rgba(20, 45, 30, 0.85) 0%, var(--panel-glass-light) 100%);
+    box-shadow: 0 0 20px rgba(80, 250, 123, 0.3);
+}
+
+.btn-unlock-ready {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    background: linear-gradient(180deg, #50fa7b 0%, #28a745 100%);
+    border: 2px solid #ffffff;
+    color: #0f1c13;
+    text-shadow: none;
+    box-shadow: 0 0 12px rgba(80, 250, 123, 0.7);
+    animation: unlockPulse 1.4s infinite alternate ease-in-out;
+}
+
+.btn-unlock-ready:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: scale(1.04);
+}
+
+@keyframes unlockPulse {
+    0% { box-shadow: 0 0 8px rgba(80, 250, 123, 0.5); }
+    100% { box-shadow: 0 0 20px rgba(80, 250, 123, 1); }
+}

@@ -43,3 +43,86 @@
     background: linear-gradient(180deg, #b33227 0%, #7a211a 100%);
     border-color: #ff5555;
 }
+
+.autoclicker-warn-badge {
+    background: rgba(255, 85, 85, 0.15);
+    border: 1px solid #ff5555;
+    color: #ffb86c;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+}
+
+.warn-status-pill {
+    margin-top: 8px;
+    padding: 4px 10px;
+    background: rgba(255, 85, 85, 0.15);
+    border: 1px solid rgba(255, 85, 85, 0.5);
+    border-radius: 4px;
+    color: #ff8080;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+}
+
+#timeout-screen {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(10, 8, 7, 0.97);
+    justify-content: center;
+    align-items: center;
+    z-index: 10002;
+    backdrop-filter: blur(8px);
+}
+
+.timeout-box {
+    border-color: #ff5555;
+    box-shadow: 0 10px 45px rgba(255, 85, 85, 0.45);
+    max-width: 460px;
+    padding: 30px;
+}
+
+.timeout-title {
+    color: #ff5555;
+    font-size: 1.7rem;
+    margin-bottom: 10px;
+}
+
+.timeout-subtitle {
+    color: #e8dcc4;
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+}
+
+.timeout-timer-card {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--brass);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 18px;
+}
+
+.timeout-timer-label {
+    font-size: 0.8rem;
+    color: #a0aec0;
+    margin-bottom: 6px;
+}
+
+.timeout-countdown {
+    font-family: var(--font-mono);
+    font-size: 1.9rem;
+    font-weight: bold;
+    color: #ffb86c;
+    text-shadow: 0 0 10px rgba(255, 184, 108, 0.4);
+}
+
+.timeout-note {
+    font-size: 0.82rem;
+    color: #8c8c96;
+    margin-bottom: 0;
+}
