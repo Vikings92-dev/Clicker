@@ -1,18 +1,71 @@
+// MODIF: Authentification automatique par jeton signé Chronos et gestion des erreurs 401
+function showChronosRedirectScreen(message) {
+    AUTH_TOKEN = "";
+    PLAYER_NAME = "";
+    sessionStorage.removeItem('chronos_clicker_token');
+
+    const loginScreen = document.getElementById('login-screen');
+    if (loginScreen) {
+        const desc = loginScreen.querySelector('p');
+        if (desc && message) desc.innerText = message;
+        loginScreen.style.display = 'flex';
+    }
+}
+
+function getAuthHeaders(includeJson = false) {
+    const headers = {
+        'Authorization': `Bearer ${AUTH_TOKEN}`
+    };
+    if (includeJson) {
+        headers['Content-Type'] = 'application/json';
+    }
+    return headers;
+}
+
 async function saveGameToServer() {
-    if (!PLAYER_NAME) return;
+    if (!AUTH_TOKEN || isSuspendedByCaptcha) return;
     try {
-        await fetch(`${API_URL}/save`, {
+        const response = await fetch(`${API_URL}/save`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: PLAYER_NAME, game_state: game })
+            headers: getAuthHeaders(true),
+            body: JSON.stringify({ game_state: game })
         });
+        if (response.status === 401) {
+            showChronosRedirectScreen("Votre session a expiré. Reconnectez-vous depuis Projet Chronos.");
+            return;
+        }
+        if (response.status === 403) {
+            const data = await response.json();
+            if (data.timeout) {
+                activateTimeoutScreen(data.timeout);
+            }
+        }
     } catch (e) { console.error(e); }
 }
 
 async function loadGameFromServer() {
+    if (!AUTH_TOKEN) {
+        showChronosRedirectScreen();
+        return;
+    }
+
     try {
-        const response = await fetch(`${API_URL}/load/${PLAYER_NAME}`);
+        const response = await fetch(`${API_URL}/load`, {
+            method: 'GET',
+            headers: getAuthHeaders(false)
+        });
+
+        if (response.status === 401) {
+            showChronosRedirectScreen("Session invalide ou expirée. Veuillez relancer le jeu depuis Projet Chronos.");
+            return;
+        }
+
         const data = await response.json();
+        PLAYER_NAME = data.username || "Mineur";
+        document.getElementById('login-screen').style.display = 'none';
+
+        updateWarnBadgeUI(data.active_warns || 0);
+
         if (data.status === "success" && data.game_state) {
             const savedGame = data.game_state;
             game.money = savedGame.money ?? 0;
@@ -44,7 +97,7 @@ async function loadGameFromServer() {
                         }
                         
                         if (localPhase.id === 1) {
-                            let baseReward = 3; // Valeur par défaut
+                            let baseReward = 3;
                             if (localPhase.blockBrocken >= 500) {
                                 baseReward += game.paliers[3].ajoutReward;
                             }
@@ -77,19 +130,36 @@ async function loadGameFromServer() {
             activateTimeoutScreen(data.timeout);
         }
 
-    } catch (error) { console.error(error); }
-    finally { initPhases(); updateUI(); updatePhasePaliersVisuals();}
+        initPhases();
+        updateUI();
+        updatePhasePaliersVisuals();
+        setInterval(saveGameToServer, 30000);
+    } catch (error) {
+        console.error(error);
+        showChronosRedirectScreen("Impossible de joindre le serveur de jeu. Réessayez depuis Projet Chronos.");
+    }
 }
 
-document.getElementById('login-btn').addEventListener('click', () => {
-    const input = document.getElementById('username-input');
-    const pseudo = input.value.trim();
-    if (pseudo.length >= 2) {
-        PLAYER_NAME = pseudo;
-        document.getElementById('login-screen').style.display = 'none';
-        loadGameFromServer();
-        setInterval(saveGameToServer, 30000);
-    } else { alert("Pseudonyme trop court."); }
+// MODIF: Initialisation automatique au chargement de la page via ?token=... ou sessionStorage
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get('token');
+
+    if (tokenFromUrl) {
+        AUTH_TOKEN = tokenFromUrl;
+        sessionStorage.setItem('chronos_clicker_token', tokenFromUrl);
+        // Nettoie le token de la barre d'adresse
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        AUTH_TOKEN = sessionStorage.getItem('chronos_clicker_token') || "";
+    }
+
+    if (!AUTH_TOKEN) {
+        showChronosRedirectScreen();
+        return;
+    }
+
+    loadGameFromServer();
 });
 
 let activeTimeoutInterval = null;
@@ -127,11 +197,10 @@ function formatRemainingTime(ms) {
 function activateTimeoutScreen(timeoutData) {
     if (!timeoutData || !timeoutData.remaining_seconds || timeoutData.remaining_seconds <= 0) return;
 
-    // Ferme la popup Turnstile si elle était ouverte
     const acPopup = document.getElementById('autoclicker-popup');
     if (acPopup) acPopup.style.display = 'none';
 
-    isSuspendedByCaptcha = true; // Met en pause loop.js et clickBtn
+    isSuspendedByCaptcha = true;
 
     const screen = document.getElementById('timeout-screen');
     const reasonEl = document.getElementById('timeout-reason-text');
@@ -167,12 +236,12 @@ function activateTimeoutScreen(timeoutData) {
 window.activateTimeoutScreen = activateTimeoutScreen;
 
 async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
-    if (!PLAYER_NAME) return;
+    if (!AUTH_TOKEN) return;
     try {
         const response = await fetch(`${API_URL}/warn`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: PLAYER_NAME, reason })
+            headers: getAuthHeaders(true),
+            body: JSON.stringify({ reason })
         });
         const data = await response.json();
 

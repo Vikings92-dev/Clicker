@@ -100,9 +100,10 @@ let game = {
 };
 
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:3000/api"
-    : "http://192.168.0.50:3000/api";
+    ? "http://localhost:3005/api"
+    : "https://clicker.projetchronos.fr/api";
 let PLAYER_NAME = "";
+let AUTH_TOKEN = "";
 let isPurchaseOnCooldown = false;
 let isGameFinished = false;
 const MAX_MONEY_LIMIT = Number.MAX_SAFE_INTEGER; // Limite technique exacte : 9 007 199 254 740 991

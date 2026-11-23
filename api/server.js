@@ -2,6 +2,7 @@ require('dotenv').config();
 const fastify = require('fastify')({ logger: true });
 const mariadb = require('mariadb');
 const cors = require('@fastify/cors');
+const crypto = require('node:crypto');
 
 // Configuration du pool de connexion MariaDB
 const pool = mariadb.createPool({
@@ -14,9 +15,67 @@ const pool = mariadb.createPool({
 });
 
 // Activation de CORS pour que votre fichier HTML puisse appeler l'API
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : [
+        'https://clicker.projetchronos.fr',
+        'http://localhost:5500',
+        'http://127.0.0.1:5500',
+        'http://192.168.0.50:5500'
+    ];
+
 fastify.register(cors, {
-    origin: process.env.CORS_ORIGIN || "*" 
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 });
+
+const AUTH_SECRET = process.env.AUTH_SECRET;
+if (!AUTH_SECRET) {
+    console.error("ERREUR CRITIQUE : AUTH_SECRET manquant dans le fichier .env");
+    process.exit(1);
+}
+
+function verifyChronosToken(token) {
+    if (!token || typeof token !== 'string' || !token.includes('.')) return null;
+
+    const [encodedPayload, signature] = token.split('.');
+    const expectedSignature = crypto
+        .createHmac('sha256', AUTH_SECRET)
+        .update(encodedPayload)
+        .digest('base64url');
+
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expectedSignature);
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+        return null;
+    }
+
+    try {
+        const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
+        if (!payload.idSiteUser || !payload.name || !payload.exp || Date.now() > payload.exp) {
+            return null;
+        }
+        return {
+            idSiteUser: Number(payload.idSiteUser),
+            name: String(payload.name),
+            rawToken: token
+        };
+    } catch {
+        return null;
+    }
+}
+
+async function requireChronosAuth(request, reply) {
+    const authHeader = request.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const verified = verifyChronosToken(token);
+
+    if (!verified) {
+        return reply.status(401).send({ status: "unauthorized", error: "Session Chronos invalide ou expirée." });
+    }
+    request.player = verified;
+}
 
 const TO_DURATIONS_MINUTES = [1, 5, 15, 60, 360, 1440, 4320, 10080];
 
@@ -43,17 +102,16 @@ async function getActiveTimeout(conn, playerId) {
     return null;
 }
 
-// Route 1: Récupérer la partie du joueur (Chargement)
-fastify.get('/api/load/:username', async (request, reply) => {
-    const { username } = request.params;
+// Route 1: Récupérer la partie du joueur
+fastify.get('/api/load', { preHandler: requireChronosAuth }, async (request, reply) => {
+    const { idSiteUser, name } = request.player;
     let conn;
     try {
         conn = await pool.getConnection();
-        const rows = await conn.query("SELECT id, game_state FROM players WHERE username = ?", [username]);
-        
+        const rows = await conn.query("SELECT id, game_state FROM players WHERE site_user_id = ?", [idSiteUser]);
+
         if (rows.length === 0) {
-            // Nouveau joueur : on retourne un état vide, le client créera l'état initial
-            return { status: "new_player", game_state: null };
+            return { status: "new_player", username: name, game_state: null, active_warns: 0, timeout: null };
         }
 
         const playerId = rows[0].id;
@@ -65,11 +123,11 @@ fastify.get('/api/load/:username', async (request, reply) => {
             [playerId]
         );
         const activeWarns = Number(warnRows[0].count) || 0;
-        
-        // MariaDB peut renvoyer le JSON sous forme de chaîne ou d'objet selon la config
+
         const state = typeof rows[0].game_state === 'string' ? JSON.parse(rows[0].game_state) : rows[0].game_state;
         return {
             status: "success",
+            username: name,
             game_state: state,
             active_warns: activeWarns,
             timeout: activeTimeout
@@ -82,13 +140,14 @@ fastify.get('/api/load/:username', async (request, reply) => {
 });
 
 // Route 2: Sauvegarder la partie (Toutes les 30s ou Action Majeure)
-fastify.post('/api/save', async (request, reply) => {
-    const { username, game_state } = request.body;
+fastify.post('/api/save', { preHandler: requireChronosAuth }, async (request, reply) => {
+    const { idSiteUser, name, rawToken } = request.player;
+    const { game_state } = request.body;
     let conn;
     try {
         conn = await pool.getConnection();
 
-        const existing = await conn.query("SELECT id FROM players WHERE username = ?", [username]);
+        const existing = await conn.query("SELECT id FROM players WHERE site_user_id = ?", [idSiteUser]);
         if (existing.length > 0) {
             const activeTimeout = await getActiveTimeout(conn, existing[0].id);
             if (activeTimeout) {
@@ -104,10 +163,10 @@ fastify.post('/api/save', async (request, reply) => {
         
         // Un "UPSERT" (INSERT ... ON DUPLICATE KEY UPDATE) pour sauvegarder ou créer en une seule requête
         await conn.query(
-            `INSERT INTO players (username, auth_token, game_state) 
-             VALUES (?, 'dummy_token', ?) 
-             ON DUPLICATE KEY UPDATE game_state = ?`,
-            [username, stateString, stateString]
+            `INSERT INTO players (site_user_id, username, auth_token, game_state) 
+             VALUES (?, ?, ?, ?) 
+             ON DUPLICATE KEY UPDATE username = ?, auth_token = ?, game_state = ?`,
+            [idSiteUser, name, rawToken, stateString, name, rawToken, stateString]
         );
         
         return { status: "success", message: "Partie sauvegardée !" };
@@ -118,14 +177,14 @@ fastify.post('/api/save', async (request, reply) => {
     }
 });
 
-fastify.post('/api/warn', async (request, reply) => {
-    const { username, reason } = request.body;
-    if (!username) return reply.status(400).send({ error: "Username requis" });
+fastify.post('/api/warn', { preHandler: requireChronosAuth }, async (request, reply) => {
+    const { idSiteUser } = request.player;
+    const { reason } = request.body || {};
 
     let conn;
     try {
         conn = await pool.getConnection();
-        const players = await conn.query("SELECT id, total_timeout_count FROM players WHERE username = ?", [username]);
+        const players = await conn.query("SELECT id, total_timeout_count FROM players WHERE site_user_id = ?", [idSiteUser]);
         if (players.length === 0) {
             return reply.status(404).send({ error: "Joueur introuvable" });
         }

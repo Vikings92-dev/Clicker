@@ -3,8 +3,9 @@ USE copper_clicker;
 
 CREATE TABLE IF NOT EXISTS players (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    auth_token VARCHAR(255) NOT NULL,
+    site_user_id INT UNIQUE NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    auth_token VARCHAR(512) NOT NULL,
     game_state JSON NOT NULL,
     last_save TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     total_warn_count INT DEFAULT 0,
