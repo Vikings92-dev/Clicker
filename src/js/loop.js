@@ -22,6 +22,7 @@ setInterval(() => {
     const isOneSecondTick = (ticksCounter >= SECONDE);
 
     game.phases.forEach(p => {
+        if (!p.unlocked) return; // cohérent avec calculateMPS : une phase verrouillée ne produit rien
         let noElecDrill = 0;
 
         if (p.activeDrills.length > 0) {
@@ -39,7 +40,8 @@ setInterval(() => {
                     if (failRoll < 1) {
                         d.isHS = true;
                         d.elec = 0;
-                        alert(`💥 Votre ${d.name} est HS ! Il ne peut plus être utilisé jusqu'à réparation.`);
+                        // Notification non bloquante : un alert() figeait toute la boucle de jeu
+                        if (typeof showFloatingLootText === 'function') showFloatingLootText(null, `💥 ${d.name} est HS !`, '#ff5555');
                         noElecDrill++;
                         return;
                     }

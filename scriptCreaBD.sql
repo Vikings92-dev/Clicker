@@ -5,11 +5,16 @@ CREATE TABLE IF NOT EXISTS players (
     id INT AUTO_INCREMENT PRIMARY KEY,
     site_user_id INT UNIQUE NOT NULL,
     username VARCHAR(50) NOT NULL,
-    auth_token VARCHAR(512) NOT NULL,
+    auth_token VARCHAR(512) NULL DEFAULT NULL,
     game_state JSON NOT NULL,
     last_save TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     total_warn_count INT DEFAULT 0,
-    total_timeout_count INT DEFAULT 0
+    total_timeout_count INT DEFAULT 0,
+    save_version INT NOT NULL DEFAULT 0,
+    state_saved_ms BIGINT NULL,
+    captcha_required TINYINT(1) NOT NULL DEFAULT 0,
+    rejected_saves INT NOT NULL DEFAULT 0,
+    loot_credit VARCHAR(255) NULL
 );
 
 CREATE TABLE IF NOT EXISTS player_warns (

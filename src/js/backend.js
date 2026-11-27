@@ -1,4 +1,10 @@
-// MODIF: Authentification automatique par jeton signé Chronos et gestion des erreurs 401
+// Authentification par jeton signé Chronos, sauvegarde versionnée et vérification serveur du captcha
+let SAVE_VERSION = 0;
+let saveInFlight = false;
+let savePending = false;
+let autoSaveIntervalId = null;
+let pendingCaptchaToken = null;
+
 function showChronosRedirectScreen(message) {
     AUTH_TOKEN = "";
     PLAYER_NAME = "";
@@ -22,25 +28,176 @@ function getAuthHeaders(includeJson = false) {
     return headers;
 }
 
+function resetGameState() {
+    game.money = 0; game.pickaxeTier = 0; game.unlockedDrillTier = 0; game.drillCounterId = 0; game.inventory = [];
+    game.repairKits = 0; game.universalRepairs = 0; game.craftParts = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
+    game.modulesStock = { electricite: 0, solidite: 0 };
+    game.phases.forEach(p => {
+        p.progress = 0;
+        p.blockBrocken = 0;
+        p.unlocked = (p.id === 1);
+        p.activeDrills = [];
+        if (Array.isArray(p.displays)) p.selectedDisplay = 0;
+    });
+}
+
+// Applique un état venant du serveur (chargement, ou correction après une sauvegarde refusée)
+function applySavedState(savedGame) {
+    if (!savedGame) {
+        resetGameState();
+        return;
+    }
+    game.money = savedGame.money ?? 0;
+    game.pickaxeTier = savedGame.pickaxeTier ?? 0;
+    game.unlockedDrillTier = savedGame.unlockedDrillTier ?? 0;
+    game.drillCounterId = savedGame.drillCounterId ?? 0;
+    game.inventory = savedGame.inventory ?? [];
+    game.repairKits = savedGame.repairKits ?? 0;
+    game.universalRepairs = savedGame.universalRepairs ?? 0;
+    game.craftParts = savedGame.craftParts ?? 0;
+    game.repairMateriaux = Array.isArray(savedGame.repairMateriaux) ? savedGame.repairMateriaux : [0, 0, 0, 0, 0];
+    game.modulesStock = {
+        electricite: (savedGame.modulesStock && savedGame.modulesStock.electricite) || 0,
+        solidite: (savedGame.modulesStock && savedGame.modulesStock.solidite) || 0
+    };
+
+    if (Array.isArray(savedGame.phases)) {
+        game.phases.forEach(localPhase => {
+            const savedPhase = savedGame.phases.find(p => p.id === localPhase.id);
+            if (!savedPhase) return;
+            localPhase.progress = savedPhase.progress ?? 0;
+            localPhase.unlocked = savedPhase.unlocked ?? (localPhase.id === 1);
+            localPhase.activeDrills = savedPhase.activeDrills ?? [];
+            localPhase.blockBrocken = savedPhase.blockBrocken ?? 0;
+
+            if (Array.isArray(localPhase.displays) && localPhase.displays.length > 0) {
+                const savedIdx = savedPhase.selectedDisplay ?? 0;
+                localPhase.selectedDisplay = (savedIdx >= 0 && savedIdx < localPhase.displays.length) ? savedIdx : 0;
+            }
+
+            if (localPhase.id === 1) {
+                let baseReward = 3;
+                if (localPhase.blockBrocken >= 500) {
+                    baseReward += game.paliers[3].ajoutReward;
+                } else if (localPhase.blockBrocken >= 250) {
+                    baseReward += game.paliers[2].ajoutReward;
+                } else if (localPhase.blockBrocken >= 100) {
+                    baseReward += game.paliers[1].ajoutReward;
+                }
+                localPhase.reward = baseReward;
+            }
+        });
+    }
+}
+
+function refreshWholeUI() {
+    if (typeof closeDeploymentModal === 'function') closeDeploymentModal();
+    initPhases();
+    updateUI();
+    if (typeof refreshShopMatSelect === 'function') refreshShopMatSelect();
+    if (typeof updatePickaxeCursor === 'function') updatePickaxeCursor(true);
+    updatePhasePaliersVisuals();
+}
+
+// Les sauvegardes sont envoyées une par une : si une sauvegarde est demandée pendant qu'une autre
+// est en cours, elle est regroupée et envoyée juste après (évite les conflits de version).
 async function saveGameToServer() {
     if (!AUTH_TOKEN || isSuspendedByCaptcha) return;
+    if (saveInFlight) {
+        savePending = true;
+        return;
+    }
+    saveInFlight = true;
+    try {
+        do {
+            savePending = false;
+            const keepGoing = await sendSave();
+            if (!keepGoing) break;
+        } while (savePending && !isSuspendedByCaptcha);
+    } finally {
+        saveInFlight = false;
+        savePending = false;
+    }
+}
+
+async function sendSave() {
     try {
         const response = await fetch(`${API_URL}/save`, {
             method: 'POST',
             headers: getAuthHeaders(true),
-            body: JSON.stringify({ game_state: game })
+            body: JSON.stringify({ game_state: game, save_version: SAVE_VERSION })
         });
+
         if (response.status === 401) {
             showChronosRedirectScreen("Votre session a expiré. Reconnectez-vous depuis Projet Chronos.");
-            return;
+            return false;
         }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok && data.status === "success") {
+            SAVE_VERSION = data.save_version;
+            return true;
+        }
+
         if (response.status === 403) {
-            const data = await response.json();
-            if (data.timeout) {
-                activateTimeoutScreen(data.timeout);
-            }
+            if (data.timeout) activateTimeoutScreen(data.timeout);
+            else if (data.status === "captcha_required") showCaptchaPopup();
+            return false;
         }
-    } catch (e) { console.error(e); }
+
+        if (response.status === 409) {
+            // Partie sauvegardée depuis un autre onglet / appareil : on reprend la version du serveur
+            if (data.game_state) {
+                SAVE_VERSION = data.save_version;
+                applySavedState(data.game_state);
+                refreshWholeUI();
+                alert("⚠️ Votre partie a été modifiée depuis un autre onglet ou appareil. La dernière sauvegarde a été rechargée.");
+            } else {
+                await reloadStateFromServer();
+            }
+            return false;
+        }
+
+        if (response.status === 422) {
+            // Sauvegarde jugée incohérente par le serveur : retour au dernier état valide
+            SAVE_VERSION = data.save_version;
+            applySavedState(data.game_state);
+            refreshWholeUI();
+            alert("⚠️ Sauvegarde refusée par le serveur (progression incohérente). Retour à la dernière sauvegarde valide.");
+            return false;
+        }
+
+        return false;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
+async function fetchGameFromServer() {
+    const response = await fetch(`${API_URL}/load`, {
+        method: 'GET',
+        headers: getAuthHeaders(false)
+    });
+    if (response.status === 401) {
+        showChronosRedirectScreen("Session invalide ou expirée. Veuillez relancer le jeu depuis Projet Chronos.");
+        return null;
+    }
+    if (!response.ok) throw new Error(`Chargement impossible (${response.status})`);
+    return response.json();
+}
+
+async function reloadStateFromServer() {
+    try {
+        const data = await fetchGameFromServer();
+        if (!data) return;
+        SAVE_VERSION = data.save_version || 0;
+        applySavedState(data.status === "success" ? data.game_state : null);
+        refreshWholeUI();
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 async function loadGameFromServer() {
@@ -50,106 +207,44 @@ async function loadGameFromServer() {
     }
 
     try {
-        const response = await fetch(`${API_URL}/load`, {
-            method: 'GET',
-            headers: getAuthHeaders(false)
-        });
+        const data = await fetchGameFromServer();
+        if (!data) return;
 
-        if (response.status === 401) {
-            showChronosRedirectScreen("Session invalide ou expirée. Veuillez relancer le jeu depuis Projet Chronos.");
-            return;
-        }
-
-        const data = await response.json();
         PLAYER_NAME = data.username || "Mineur";
         document.getElementById('login-screen').style.display = 'none';
-
         updateWarnBadgeUI(data.active_warns || 0);
+        SAVE_VERSION = data.save_version || 0;
 
-        if (data.status === "success" && data.game_state) {
-            const savedGame = data.game_state;
-            game.money = savedGame.money ?? 0;
-            game.pickaxeTier = savedGame.pickaxeTier ?? 0;
-            game.unlockedDrillTier = savedGame.unlockedDrillTier ?? 0;
-            game.drillCounterId = savedGame.drillCounterId ?? 0;
-            game.inventory = savedGame.inventory ?? [];
-            game.repairKits = savedGame.repairKits ?? 0;
-            game.universalRepairs = savedGame.universalRepairs ?? 0;
-            game.craftParts = savedGame.craftParts ?? 0;
-            game.repairMateriaux = Array.isArray(savedGame.repairMateriaux) ? savedGame.repairMateriaux : [0,0,0,0,0];
-            game.modulesStock = {
-                electricite: (savedGame.modulesStock && savedGame.modulesStock.electricite) || 0,
-                solidite: (savedGame.modulesStock && savedGame.modulesStock.solidite) || 0
-            };
-
-            if (Array.isArray(savedGame.phases)) {
-                game.phases.forEach(localPhase => {
-                    const savedPhase = savedGame.phases.find(p => p.id === localPhase.id);
-                    if (savedPhase) {
-                        localPhase.progress = savedPhase.progress ?? 0;
-                        localPhase.unlocked = savedPhase.unlocked ?? (localPhase.id === 1);
-                        localPhase.activeDrills = savedPhase.activeDrills ?? [];
-                        localPhase.blockBrocken = savedPhase.blockBrocken ?? 0;
-
-                        if (Array.isArray(localPhase.displays) && localPhase.displays.length > 0) {
-                            const savedIdx = savedPhase.selectedDisplay ?? 0;
-                            localPhase.selectedDisplay = (savedIdx >= 0 && savedIdx < localPhase.displays.length) ? savedIdx : 0;
-                        }
-                        
-                        if (localPhase.id === 1) {
-                            let baseReward = 3;
-                            if (localPhase.blockBrocken >= 500) {
-                                baseReward += game.paliers[3].ajoutReward;
-                            }
-                            else if (localPhase.blockBrocken >= 250) {
-                                baseReward += game.paliers[2].ajoutReward;
-                            }
-                            else if (localPhase.blockBrocken >= 100) {
-                                baseReward += game.paliers[1].ajoutReward;
-                            }
-                            localPhase.reward = baseReward;
-                        }
-                    }
-                });
-            }
-        } else {
-            game.money = 0; game.pickaxeTier = 0; game.unlockedDrillTier = 0; game.drillCounterId = 0; game.inventory = [];
-            game.repairKits = 0; game.universalRepairs = 0; game.craftParts = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
-            game.modulesStock = { electricite: 0, solidite: 0 };
-            game.phases.forEach(p => {
-                p.progress = 0;
-                p.blockBrocken = 0;
-                p.unlocked = (p.id === 1);
-                p.activeDrills = [];
-                if (Array.isArray(p.displays)) p.selectedDisplay = 0;
-            });
-            await saveGameToServer();
-        }
+        const isNewPlayer = !(data.status === "success" && data.game_state);
+        applySavedState(isNewPlayer ? null : data.game_state);
 
         if (data.timeout) {
             activateTimeoutScreen(data.timeout);
+        } else if (data.captcha_required) {
+            showCaptchaPopup();
         }
 
-        initPhases();
-        updateUI();
-        if (typeof updatePickaxeCursor === 'function') updatePickaxeCursor(true);
-        updatePhasePaliersVisuals();
-        setInterval(saveGameToServer, 30000);
+        refreshWholeUI();
+        if (isNewPlayer) await saveGameToServer();
+
+        if (!autoSaveIntervalId) autoSaveIntervalId = setInterval(saveGameToServer, 30000);
     } catch (error) {
         console.error(error);
         showChronosRedirectScreen("Impossible de joindre le serveur de jeu. Réessayez depuis Projet Chronos.");
     }
 }
 
-// MODIF: Initialisation automatique au chargement de la page via ?token=... ou sessionStorage
+// Récupération du jeton : #token=... (recommandé : jamais envoyé aux serveurs ni dans les logs),
+// ?token=... (ancien format) ou sessionStorage
 window.addEventListener('DOMContentLoaded', () => {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
+    const tokenFromUrl = hashParams.get('token') || urlParams.get('token');
 
     if (tokenFromUrl) {
         AUTH_TOKEN = tokenFromUrl;
         sessionStorage.setItem('chronos_clicker_token', tokenFromUrl);
-        // Nettoie le token de la barre d'adresse
+        // Nettoie le token de la barre d'adresse et de l'historique
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
         AUTH_TOKEN = sessionStorage.getItem('chronos_clicker_token') || "";
@@ -256,3 +351,37 @@ async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
     }
 }
 window.reportAutoclickerWarnToServer = reportAutoclickerWarnToServer;
+
+// Le captcha est validé par le serveur (Cloudflare siteverify) : sans cela, les sauvegardes restent bloquées
+async function submitCaptchaToServer() {
+    const btn = document.getElementById('btn-close-autoclicker');
+    if (!pendingCaptchaToken) return;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Vérification en cours...";
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/captcha`, {
+            method: 'POST',
+            headers: getAuthHeaders(true),
+            body: JSON.stringify({ token: pendingCaptchaToken })
+        });
+        pendingCaptchaToken = null;
+
+        if (response.ok) {
+            closeAutoclickerPopup();
+            saveGameToServer();
+            return;
+        }
+    } catch (e) {
+        console.error("Erreur lors de la vérification du captcha :", e);
+    }
+
+    // Échec : nouveau captcha
+    pendingCaptchaToken = null;
+    if (btn) btn.innerText = "Échec de la vérification, réessayez";
+    if (window.turnstile) window.turnstile.reset('#cf-turnstile-container');
+}
+window.submitCaptchaToServer = submitCaptchaToServer;

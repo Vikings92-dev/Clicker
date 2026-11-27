@@ -3,6 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- N'envoie jamais l'URL complète (qui peut contenir le jeton de session) aux sites tiers -->
+    <meta name="referrer" content="strict-origin">
+    <script>
+        // Retire le jeton de l'URL le plus tôt possible, avant le chargement de tout script tiers
+        (function () {
+            var hash = new URLSearchParams(window.location.hash.slice(1));
+            var query = new URLSearchParams(window.location.search);
+            var token = hash.get('token') || query.get('token');
+            if (token) {
+                sessionStorage.setItem('chronos_clicker_token', token);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        })();
+    </script>
     <title>MYRA Clicker</title>
     <link rel="icon" type="image/png" href="/public/favicon.png">
 
@@ -73,7 +87,7 @@
             <div class="turnstile-wrapper">
                 <div id="cf-turnstile-container" class="cf-turnstile" data-sitekey="0x4AAAAAAFzyK8F-cDOxCoKN" data-callback="onTurnstileSuccess"></div>
             </div>
-            <button id="btn-close-autoclicker" class="btn" disabled onclick="closeAutoclickerPopup()">
+            <button id="btn-close-autoclicker" class="btn" disabled onclick="submitCaptchaToServer()">
                 Vérification requise...
             </button>
         </div>

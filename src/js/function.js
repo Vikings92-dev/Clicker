@@ -752,6 +752,8 @@ function updatePhasePaliersVisuals() {
 }
 
 window.onTurnstileSuccess = function(token) {
+    // Le jeton est envoyé au serveur (submitCaptchaToServer) qui le vérifie auprès de Cloudflare
+    pendingCaptchaToken = token;
     const btn = document.getElementById('btn-close-autoclicker');
     if (btn) {
         btn.disabled = false;
@@ -761,7 +763,17 @@ window.onTurnstileSuccess = function(token) {
 };
 
 function triggerAutoclickerAlert() {
+    showCaptchaPopup();
+
+    if (typeof reportAutoclickerWarnToServer === 'function') {
+        reportAutoclickerWarnToServer('autoclick_detected');
+    }
+}
+
+// Affiche le captcha sans envoyer de nouvel avertissement (ex. rechargement de page pendant un captcha en attente)
+function showCaptchaPopup() {
     isSuspendedByCaptcha = true;
+    pendingCaptchaToken = null;
     const popup = document.getElementById('autoclicker-popup');
     const btn = document.getElementById('btn-close-autoclicker');
     
@@ -777,11 +789,8 @@ function triggerAutoclickerAlert() {
     if (window.turnstile) {
         window.turnstile.reset('#cf-turnstile-container');
     }
-
-    if (typeof reportAutoclickerWarnToServer === 'function') {
-        reportAutoclickerWarnToServer('autoclick_detected');
-    }
 }
+window.showCaptchaPopup = showCaptchaPopup;
 
 function closeAutoclickerPopup() {
     const popup = document.getElementById('autoclicker-popup');
