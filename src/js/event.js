@@ -1,17 +1,20 @@
-// MODIF: Événements aléatoires avec traînée de particules (Option A), rareté vert à or et vitesse proportionnelle
-let clickMultiplier = 1;
-let clickMultiplierTimeout = null;
+import { game } from './state.js';
+import { formatMoney, updateUI } from './function.js';
+import { saveGameToServer } from './backend.js';
 
-function checkRandomClickEvent() {
+// MODIF: Événements aléatoires avec traînée de particules (Option A), rareté vert à or et vitesse proportionnelle
+export let clickMultiplier = 1;
+export let clickMultiplierTimeout = null;
+
+export function checkRandomClickEvent() {
     // 1 chance sur 2 pour les tests (remettre * 500 pour la production finale)
     const roll = Math.floor(Math.random() * 500) + 1;
     if (roll === 1) {
         spawnClickOrb();
     }
 }
-window.checkRandomClickEvent = checkRandomClickEvent;
 
-function spawnClickOrb() {
+export function spawnClickOrb() {
     const clickArea = document.querySelector('.click-area');
     if (!clickArea) return;
 
@@ -161,7 +164,7 @@ function spawnClickOrb() {
 }
 
 // Fonction de génération d'une particule éphémère de traînée
-function createTrailParticle(container, centerX, centerY, color) {
+export function createTrailParticle(container, centerX, centerY, color) {
     const particle = document.createElement('div');
     particle.className = 'event-trail-particle';
     const size = Math.floor(16 + Math.random() * 14); // 16px à 30px
@@ -178,7 +181,7 @@ function createTrailParticle(container, centerX, centerY, color) {
     }, 400); // Nettoyage DOM synchrone avec la fin de l'animation CSS
 }
 
-function triggerBonusEffect(bonus, rect) {
+export function triggerBonusEffect(bonus, rect) {
     const clickArea = document.querySelector('.click-area');
     const toast = document.createElement('div');
     toast.className = 'event-toast';
@@ -212,6 +215,6 @@ function triggerBonusEffect(bonus, rect) {
     updateUI();
 }
 
-window.getClickMultiplier = function() {
+export function getClickMultiplier() {
     return clickMultiplier;
-};
+}

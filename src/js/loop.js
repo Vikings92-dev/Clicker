@@ -1,9 +1,13 @@
-// MODIF: Boucle de jeu optimisée (100ms) avec scoping propre
-const dt = 0.1;
-const SECONDE = 10;
-let ticksCounter = 0;
+import { game } from './state.js';
+import { checkVictoryCondition, isGameFinished, isSuspendedByCaptcha, showFloatingLootText, updatePhasePaliersVisuals, updateUI } from './function.js';
+import { calculateMPS } from './passive.js';
 
-function applyDrillDuraLoss(drill, amount) {
+// MODIF: Boucle de jeu optimisée (100ms) avec scoping propre
+export const dt = 0.1;
+export const SECONDE = 10;
+export let ticksCounter = 0;
+
+export function applyDrillDuraLoss(drill, amount) {
     if (drill.modules && drill.modules.solidite && Math.random() < 0.5) {
         return;
     }

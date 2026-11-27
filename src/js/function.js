@@ -1,20 +1,26 @@
-let isSuspendedByCaptcha = false;
-let turnstileWidgetId = null;
-let rawClickCount = 0;
-let validClicksThisSecond = 0;
-let lastValidClickTimestamp = 0;
-const MIN_CLICK_INTERVAL_MS = 1000 / 15;
-let overLimitSecondsStreak = 0;
+import { MAX_MONEY_LIMIT, buyDrillGlobalBtn, buyKitBtn, buyKitQtyInput, buyMatBtn, buyMatDrillImg, buyMatQtyInput, buyMatTypeSelect, buyModElecBtn, buyModElecQtyInput, buyModSolidBtn, buyModSolidQtyInput, clickBtn, drillShopCost, drillShopImg, drillShopTitle, game, inventoryContainer, kitShopStockCountEl, kitStockCountEl, kitTotalCostEl, matTotalCostEl, modElecShopStockEl, modElecTotalCostEl, modSolidShopStockEl, modSolidTotalCostEl, moneyEl, mpsEl, phasesContainer, pickaxeTitleEl, researchChanceEl, researchCostEl, researchDrillBtn, researchDrillImg, researchNextLevelEl, upgradePickaxeBtn } from './state.js';
+import { calculateMPS } from './passive.js';
+import { reportAutoclickerWarnToServer, saveGameToServer, setPendingCaptchaToken, submitCaptchaToServer } from './backend.js';
+import { resetAutoclickTracking } from './button.js';
 
-function getDrillImage(drill) {
+export let isSuspendedByCaptcha = false;
+export let turnstileWidgetId = null;
+export let isPurchaseOnCooldown = false;
+export let isGameFinished = false;
+
+export function setSuspendedByCaptcha(value) {
+    isSuspendedByCaptcha = value;
+}
+
+export function getDrillImage(drill) {
     if (!drill) return '';
     const template = game.drillTemplates[drill.tier];
     return (template && template.image) || drill.image || '';
 }
 
-let lastAppliedPickaxeTier = -1;
+export let lastAppliedPickaxeTier = -1;
 
-function updatePickaxeCursor(force = false) {
+export function updatePickaxeCursor(force = false) {
     if (!force && lastAppliedPickaxeTier === game.pickaxeTier) return;
     lastAppliedPickaxeTier = game.pickaxeTier;
 
@@ -26,14 +32,13 @@ function updatePickaxeCursor(force = false) {
     document.documentElement.style.cursor = cursorValue;
     document.body.style.cursor = cursorValue;
 }
-window.updatePickaxeCursor = updatePickaxeCursor;
 
-function getDrillModulesKey(drill) {
+export function getDrillModulesKey(drill) {
     const m = (drill && drill.modules) || {};
     return `${m.electricite ? '1' : '0'}-${m.solidite ? '1' : '0'}`;
 }
 
-function renderDrillModulesBadges(drill) {
+export function renderDrillModulesBadges(drill) {
     if (!drill || !drill.modules) return '';
     let html = '';
     if (drill.modules.electricite) {
@@ -45,7 +50,7 @@ function renderDrillModulesBadges(drill) {
     return html ? `<span class="drill-modules-badges">${html}</span>` : '';
 }
 
-function getGlobalDrillCost() {
+export function getGlobalDrillCost() {
     const currentTemplate = game.drillTemplates[game.unlockedDrillTier];
     let totalOwned = game.inventory.filter(d => d.tier === game.unlockedDrillTier).length;
     game.phases.forEach(p => {
@@ -56,7 +61,7 @@ function getGlobalDrillCost() {
     return Math.floor(currentTemplate.costBase + multiplier * Math.pow(x - 1, 5));
 }
 
-function getPhaseBgImage(phase) {
+export function getPhaseBgImage(phase) {
     if (phase && Array.isArray(phase.displays) && phase.displays.length > 0) {
         const idx = (phase.selectedDisplay >= 0 && phase.selectedDisplay < phase.displays.length)
             ? phase.selectedDisplay
@@ -66,7 +71,7 @@ function getPhaseBgImage(phase) {
     return (phase && phase.bgImage) || "/public/background2.png";
 }
 
-function setPhaseDisplay(phaseId, displayIndex) {
+export function setPhaseDisplay(phaseId, displayIndex) {
     const phase = game.phases.find(p => p.id === phaseId);
     if (!phase || !phase.unlocked || !Array.isArray(phase.displays) || !phase.displays[displayIndex]) return;
     if (phase.selectedDisplay === displayIndex) return;
@@ -98,9 +103,8 @@ function setPhaseDisplay(phaseId, displayIndex) {
 
     saveGameToServer();
 }
-window.setPhaseDisplay = setPhaseDisplay;
 
-function initPhases() {
+export function initPhases() {
     phasesContainer.innerHTML = '';
     game.phases.forEach((p, idx) => {
         const row = document.createElement('div');
@@ -177,10 +181,10 @@ function initPhases() {
     updateCosts();
 }
 
-let currentDeployPhaseId = null;
-let selectedDrillUids = new Set();
+export let currentDeployPhaseId = null;
+export let selectedDrillUids = new Set();
 
-function renderDeploymentGrid() {
+export function renderDeploymentGrid() {
     const grid = document.getElementById('deployment-drills-grid');
     if (!grid) return;
 
@@ -247,9 +251,8 @@ function renderDeploymentGrid() {
         grid.appendChild(card);
     });
 }
-window.renderDeploymentGrid = renderDeploymentGrid;
 
-function openDeploymentMenu(phaseId) {
+export function openDeploymentMenu(phaseId) {
     if (game.inventory.length === 0) {
         alert("Votre hangar est vide.");
         return;
@@ -281,7 +284,7 @@ function openDeploymentMenu(phaseId) {
     if (modal) modal.style.display = 'flex';
 }
 
-function toggleCardSelection(uid, cardElement) {
+export function toggleCardSelection(uid, cardElement) {
     if (selectedDrillUids.has(uid)) {
         selectedDrillUids.delete(uid);
         cardElement.classList.remove('selected');
@@ -292,7 +295,7 @@ function toggleCardSelection(uid, cardElement) {
     updateSelectedCountDisplay();
 }
 
-function toggleSelectAllCardDrills(selectAll) {
+export function toggleSelectAllCardDrills(selectAll) {
     const grid = document.getElementById('deployment-drills-grid');
     const cards = grid.querySelectorAll('.drill-select-card');
 
@@ -305,24 +308,22 @@ function toggleSelectAllCardDrills(selectAll) {
     }
     updateSelectedCountDisplay();
 }
-window.toggleSelectAllCardDrills = toggleSelectAllCardDrills;
 
-function updateSelectedCountDisplay() {
+export function updateSelectedCountDisplay() {
     const counter = document.getElementById('deployment-selected-count');
     if (counter) {
         counter.innerText = `${selectedDrillUids.size} drill(s) sélectionnée(s)`;
     }
 }
 
-function closeDeploymentModal() {
+export function closeDeploymentModal() {
     const modal = document.getElementById('deployment-modal');
     if (modal) modal.style.display = 'none';
     currentDeployPhaseId = null;
     selectedDrillUids.clear();
 }
-window.closeDeploymentModal = closeDeploymentModal;
 
-function confirmDeploySelectedDrills() {
+export function confirmDeploySelectedDrills() {
     if (!currentDeployPhaseId) return;
     
     const phase = game.phases.find(p => p.id === currentDeployPhaseId);
@@ -351,9 +352,8 @@ function confirmDeploySelectedDrills() {
     saveGameToServer();
     updateUI();
 }
-window.confirmDeploySelectedDrills = confirmDeploySelectedDrills;
 
-function togglePhaseContent(phaseId) {
+export function togglePhaseContent(phaseId) {
     const phase = game.phases.find(p => p.id === phaseId);
     if (!phase || !phase.unlocked) return; // Empêche l'ouverture si la phase est verrouillée
 
@@ -372,10 +372,9 @@ function togglePhaseContent(phaseId) {
         progressArea.style.display = "block";
     }
 }
-window.togglePhaseContent = togglePhaseContent;
 
 
-function recallDrillFromPhase(drillUid, phaseId) {
+export function recallDrillFromPhase(drillUid, phaseId) {
     const phase = game.phases.find(p => p.id === phaseId);
     const idx = phase.activeDrills.findIndex(d => d.uid === drillUid);
     if (idx !== -1) {
@@ -387,11 +386,10 @@ function recallDrillFromPhase(drillUid, phaseId) {
         phase.progress = 0;
     }
 }
-window.recallDrillFromPhase = recallDrillFromPhase;
 
-let lastRenderedUnlockedTier = -1;
+export let lastRenderedUnlockedTier = -1;
 
-function refreshShopMatSelect() {
+export function refreshShopMatSelect() {
     if (!buyMatTypeSelect) return;
 
     const currentValue = buyMatTypeSelect.value || "T0";
@@ -413,9 +411,8 @@ function refreshShopMatSelect() {
 
     lastRenderedUnlockedTier = game.unlockedDrillTier;
 }
-window.refreshShopMatSelect = refreshShopMatSelect;
 
-function updateCosts() {
+export function updateCosts() {
     if (isGameFinished) return;
 
     game.phases.forEach((p, idx) => {
@@ -567,7 +564,7 @@ function updateCosts() {
     if (buyModSolidBtn) buyModSolidBtn.disabled = game.money < totalModSolidPrice || isPurchaseOnCooldown;
 }
 
-function updateUI() {
+export function updateUI() {
     moneyEl.innerText = formatMoney(game.money) + " $";
     pickaxeTitleEl.innerText = "Pioche : " + game.pickaxeNames[game.pickaxeTier];
     
@@ -688,7 +685,7 @@ function updateUI() {
     updateCosts();
 }
 
-function triggerPurchaseCooldown() {
+export function triggerPurchaseCooldown() {
     isPurchaseOnCooldown = true;
     updateCosts();
 
@@ -698,7 +695,7 @@ function triggerPurchaseCooldown() {
     }, 1000)
 }
 
-function checkVictoryCondition() {
+export function checkVictoryCondition() {
     if (game.money >= MAX_MONEY_LIMIT && !isGameFinished) {
         isGameFinished = true;
 
@@ -714,7 +711,7 @@ function checkVictoryCondition() {
     }
 }
 
-function updatePhasePaliersVisuals() {
+export function updatePhasePaliersVisuals() {
     const phase1 = game.phases.find(p => p.id === 1);
     if (!phase1) return;
 
@@ -751,18 +748,18 @@ function updatePhasePaliersVisuals() {
     }
 }
 
-window.onTurnstileSuccess = function(token) {
+export function onTurnstileSuccess(token) {
     // Le jeton est envoyé au serveur (submitCaptchaToServer) qui le vérifie auprès de Cloudflare
-    pendingCaptchaToken = token;
+    setPendingCaptchaToken(token);
     const btn = document.getElementById('btn-close-autoclicker');
     if (btn) {
         btn.disabled = false;
         btn.innerText = "J'ai compris (Reprendre le jeu)";
         btn.style.filter = "none";
     }
-};
+}
 
-function triggerAutoclickerAlert() {
+export function triggerAutoclickerAlert() {
     showCaptchaPopup();
 
     if (typeof reportAutoclickerWarnToServer === 'function') {
@@ -771,9 +768,9 @@ function triggerAutoclickerAlert() {
 }
 
 // Affiche le captcha sans envoyer de nouvel avertissement (ex. rechargement de page pendant un captcha en attente)
-function showCaptchaPopup() {
+export function showCaptchaPopup() {
     isSuspendedByCaptcha = true;
-    pendingCaptchaToken = null;
+    setPendingCaptchaToken(null);
     const popup = document.getElementById('autoclicker-popup');
     const btn = document.getElementById('btn-close-autoclicker');
     
@@ -790,23 +787,17 @@ function showCaptchaPopup() {
         window.turnstile.reset('#cf-turnstile-container');
     }
 }
-window.showCaptchaPopup = showCaptchaPopup;
 
-function closeAutoclickerPopup() {
+export function closeAutoclickerPopup() {
     const popup = document.getElementById('autoclicker-popup');
     if (popup) {
         popup.style.display = 'none';
     }
     isSuspendedByCaptcha = false;
-    overLimitSecondsStreak = 0;
-    lastClickTimestampForInterval = 0;
-    lastIntervalMs = 0;
-    consecutiveIdenticalIntervals = 0;
-    streakDurationAccumulatorMs = 0;
+    resetAutoclickTracking();
 }
-window.closeAutoclickerPopup = closeAutoclickerPopup;
 
-function formatMoney(value) {
+export function formatMoney(value) {
     if (value === null || value === undefined || isNaN(value)) return "0";
     if (value < 1000) return value.toFixed(2);
 
@@ -829,7 +820,7 @@ function formatMoney(value) {
     return value.toFixed(2);
 }
 
-function openShopModal() {
+export function openShopModal() {
     const modal = document.getElementById('shop-modal');
     if (modal) {
         modal.style.display = 'flex';
@@ -837,19 +828,17 @@ function openShopModal() {
         updateCosts();
     }
 }
-window.openShopModal = openShopModal;
 
-function closeShopModal() {
+export function closeShopModal() {
     const modal = document.getElementById('shop-modal');
     if (modal) {
         modal.style.display = 'none';
     }
 }
-window.closeShopModal = closeShopModal;
 
-let currentRepairTab = 'hs';
+export let currentRepairTab = 'hs';
 
-function switchRepairTab(tabName) {
+export function switchRepairTab(tabName) {
     currentRepairTab = (tabName === 'univ') ? 'dura' : tabName;
     const btnHs = document.getElementById('tab-repair-hs');
     const btnDura = document.getElementById('tab-repair-dura');
@@ -900,23 +889,20 @@ function switchRepairTab(tabName) {
 
     renderRepairGrid();
 }
-window.switchRepairTab = switchRepairTab;
 
-function openRepairModal() {
+export function openRepairModal() {
     const modal = document.getElementById('repair-modal');
     if (!modal) return;
     switchRepairTab(currentRepairTab);
     modal.style.display = 'flex';
 }
-window.openRepairModal = openRepairModal;
 
-function closeRepairModal() {
+export function closeRepairModal() {
     const modal = document.getElementById('repair-modal');
     if (modal) modal.style.display = 'none';
 }
-window.closeRepairModal = closeRepairModal;
 
-function renderRepairGrid() {
+export function renderRepairGrid() {
     const grid = document.getElementById('repair-drills-grid');
     const kitsCountEl = document.getElementById('repair-modal-kits');
     const univCountEl = document.getElementById('repair-modal-univ');
@@ -1092,9 +1078,8 @@ function renderRepairGrid() {
         grid.appendChild(card);
     });
 }
-window.renderRepairGrid = renderRepairGrid;
 
-function installSelectedModules(drillUid) {
+export function installSelectedModules(drillUid) {
     const drill = game.inventory.find(d => d.uid === drillUid);
     if (!drill) return;
 
@@ -1142,9 +1127,8 @@ function installSelectedModules(drillUid) {
     updateUI();
     saveGameToServer();
 }
-window.installSelectedModules = installSelectedModules;
 
-function applyHsRepair(drillUid, chance) {
+export function applyHsRepair(drillUid, chance) {
     if (!game.repairKits || game.repairKits <= 0) {
         alert("Vous n'avez plus de Caisse à outils disponible.");
         return;
@@ -1168,7 +1152,7 @@ function applyHsRepair(drillUid, chance) {
     saveGameToServer();
 }
 
-function applyDuraRepair(drillUid, chance) {
+export function applyDuraRepair(drillUid, chance) {
     const drill = game.inventory.find(d => d.uid === drillUid);
     if (!drill || drill.dura >= drill.maxDura) return;
 
@@ -1194,7 +1178,7 @@ function applyDuraRepair(drillUid, chance) {
     saveGameToServer();
 }
 
-function applyUniversalRepair(drillUid) {
+export function applyUniversalRepair(drillUid) {
     if (!game.universalRepairs || game.universalRepairs <= 0) {
         alert("Vous n'avez aucune Réparation Universelle en stock.");
         return;
@@ -1217,9 +1201,8 @@ function applyUniversalRepair(drillUid) {
     updateUI();
     saveGameToServer();
 }
-window.applyUniversalRepair = applyUniversalRepair;
 
-function craftRepairKit(qty = 1) {
+export function craftRepairKit(qty = 1) {
     const COST_PER_KIT = 5;
     const requestedQty = Math.max(1, parseInt(qty) || 1);
     const totalCost = requestedQty * COST_PER_KIT;
@@ -1236,9 +1219,8 @@ function craftRepairKit(qty = 1) {
     updateUI();
     saveGameToServer();
 }
-window.craftRepairKit = craftRepairKit;
 
-function craftRepairKitMax() {
+export function craftRepairKitMax() {
     const maxQty = Math.floor((game.craftParts || 0) / 5);
     if (maxQty <= 0) {
         alert("Vous n'avez pas assez de pièces mécaniques (minimum 5 requises pour fabriquer une caisse).");
@@ -1246,9 +1228,8 @@ function craftRepairKitMax() {
     }
     craftRepairKit(maxQty);
 }
-window.craftRepairKitMax = craftRepairKitMax;
 
-function checkClickLoot(event) {
+export function checkClickLoot(event) {
     const roll = Math.random() * 100; // Tirage de 0 à 100%
 
     // 1. Caisse à outils complète : 0.15% (~1 chance sur 660)
@@ -1269,9 +1250,8 @@ function checkClickLoot(event) {
         showFloatingLootText(event, "⚙️ +1 Pièce mécanique", "#8be9fd");
     }
 }
-window.checkClickLoot = checkClickLoot;
 
-function showFloatingLootText(event, text, color) {
+export function showFloatingLootText(event, text, color) {
     const clickArea = document.querySelector('.click-area');
     if (!clickArea) return;
 
@@ -1299,9 +1279,8 @@ function showFloatingLootText(event, text, color) {
         popup.remove();
     }, 1200);
 }
-window.showFloatingLootText = showFloatingLootText;
 
-async function unlockPhase(phaseId) {
+export async function unlockPhase(phaseId) {
     if (isGameFinished || isPurchaseOnCooldown) return;
 
     const idx = game.phases.findIndex(p => p.id === phaseId);
@@ -1338,7 +1317,7 @@ async function unlockPhase(phaseId) {
     }
 }
 
-function toogleStockZeroStyle(elementId, stock) {
+export function toogleStockZeroStyle(elementId, stock) {
     const element = document.getElementById(elementId);
     if (!element) return
     element.innerText = stock;

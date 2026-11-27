@@ -1,9 +1,27 @@
-let lastClickTimestampForInterval = 0;
-let lastIntervalMs = 0;
-let streakDurationAccumulatorMs = 0;
+import { buyDrillGlobalBtn, buyKitBtn, buyKitQtyInput, buyMatBtn, buyMatQtyInput, buyMatTypeSelect, buyModElecBtn, buyModElecQtyInput, buyModSolidBtn, buyModSolidQtyInput, clickBtn, game, researchDrillBtn, upgradePickaxeBtn } from './state.js';
+import { checkClickLoot, getGlobalDrillCost, isGameFinished, isPurchaseOnCooldown, isSuspendedByCaptcha, openRepairModal, openShopModal, refreshShopMatSelect, triggerAutoclickerAlert, triggerPurchaseCooldown, updateCosts, updatePickaxeCursor, updateUI } from './function.js';
+import { checkRandomClickEvent, getClickMultiplier } from './event.js';
+import { saveGameToServer } from './backend.js';
 
-const INTERVAL_TOLERANCE_MS = 2; // Tolérance de 2ms
-const REQUIRED_STREAK_DURATION_MS = 10000;
+export let lastClickTimestampForInterval = 0;
+export let lastIntervalMs = 0;
+export let streakDurationAccumulatorMs = 0;
+export let rawClickCount = 0;
+export let validClicksThisSecond = 0;
+export let lastValidClickTimestamp = 0;
+export const MIN_CLICK_INTERVAL_MS = 1000 / 15;
+export let overLimitSecondsStreak = 0;
+
+// Remet à zéro la détection d'autoclick (appelé à la fermeture du captcha)
+export function resetAutoclickTracking() {
+    overLimitSecondsStreak = 0;
+    lastClickTimestampForInterval = 0;
+    lastIntervalMs = 0;
+    streakDurationAccumulatorMs = 0;
+}
+
+export const INTERVAL_TOLERANCE_MS = 2; // Tolérance de 2ms
+export const REQUIRED_STREAK_DURATION_MS = 10000;
 
 setInterval(() => {
     // 1. Détection cadence brute excessive (> 15 CPS pendant 5 sec)
@@ -85,7 +103,7 @@ clickBtn.addEventListener('click', (e) => {
     }
 
     // Multiplicateur temporaire (si actif via js/events.js)
-    const currentMultiplier = (typeof getClickMultiplier === 'function') ? getClickMultiplier() : 1;
+    const currentMultiplier = getClickMultiplier();
     game.money += game.pickaxePower[game.pickaxeTier] * currentMultiplier;
 
     updateUI();
@@ -157,7 +175,7 @@ researchDrillBtn.addEventListener('click', async () => {
     }
 });
 
-const openShopBtn = document.getElementById('open-shop-btn');
+export const openShopBtn = document.getElementById('open-shop-btn');
 if (openShopBtn) {
     openShopBtn.addEventListener('click', openShopModal);
 }
@@ -188,7 +206,7 @@ if (buyKitBtn) {
     });
 }
 
-const openRepairBtn = document.getElementById('open-repair-btn');
+export const openRepairBtn = document.getElementById('open-repair-btn');
 if (openRepairBtn) {
     openRepairBtn.addEventListener('click', openRepairModal);
 }

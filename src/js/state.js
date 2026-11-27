@@ -1,4 +1,4 @@
-let game = {
+export let game = {
     money: 0,
     pickaxeTier: 0,
 
@@ -110,51 +110,47 @@ let game = {
     ]
 };
 
-const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+export const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:3005/api"
     : "https://clicker.projetchronos.fr/api";
-let PLAYER_NAME = "";
-let AUTH_TOKEN = "";
-let isPurchaseOnCooldown = false;
-let isGameFinished = false;
-const MAX_MONEY_LIMIT = Number.MAX_SAFE_INTEGER; // Limite technique exacte : 9 007 199 254 740 991
+export const MAX_MONEY_LIMIT = Number.MAX_SAFE_INTEGER; // Limite technique exacte : 9 007 199 254 740 991
 
 // DOM Elements
-const moneyEl = document.getElementById('money');
-const mpsEl = document.getElementById('mps');
-const clickBtn = document.getElementById('click-btn');
-const pickaxeTitleEl = document.getElementById('pickaxe-title');
-const upgradePickaxeBtn = document.getElementById('upgrade-pickaxe-btn');
-const phasesContainer = document.getElementById('phases-container');
-const inventoryContainer = document.getElementById('inventory-container');
-const buyDrillGlobalBtn = document.getElementById('buy-drill-global-btn');
-const drillShopTitle = document.getElementById('drill-shop-title');
-const drillShopCost = document.getElementById('drill-shop-cost');
-const drillShopImg = document.getElementById('drill-shop-img');
-const researchDrillBtn = document.getElementById('research-drill-btn');
-const researchCostEl = document.getElementById('research-cost');
-const researchChanceEl = document.getElementById('research-chance');
-const researchNextLevelEl = document.getElementById('research-next-level');
-const researchDrillImg = document.getElementById('research-drill-img');
+export const moneyEl = document.getElementById('money');
+export const mpsEl = document.getElementById('mps');
+export const clickBtn = document.getElementById('click-btn');
+export const pickaxeTitleEl = document.getElementById('pickaxe-title');
+export const upgradePickaxeBtn = document.getElementById('upgrade-pickaxe-btn');
+export const phasesContainer = document.getElementById('phases-container');
+export const inventoryContainer = document.getElementById('inventory-container');
+export const buyDrillGlobalBtn = document.getElementById('buy-drill-global-btn');
+export const drillShopTitle = document.getElementById('drill-shop-title');
+export const drillShopCost = document.getElementById('drill-shop-cost');
+export const drillShopImg = document.getElementById('drill-shop-img');
+export const researchDrillBtn = document.getElementById('research-drill-btn');
+export const researchCostEl = document.getElementById('research-cost');
+export const researchChanceEl = document.getElementById('research-chance');
+export const researchNextLevelEl = document.getElementById('research-next-level');
+export const researchDrillImg = document.getElementById('research-drill-img');
 
-const buyKitQtyInput = document.getElementById('buy-kit-qty');
-const buyKitBtn = document.getElementById('buy-kit-btn');
-const kitTotalCostEl = document.getElementById('kit-total-cost');
-const kitStockCountEl = document.getElementById('kit-stock-count');
-const kitShopStockCountEl = document.getElementById('kit-shop-stock-count');
+export const buyKitQtyInput = document.getElementById('buy-kit-qty');
+export const buyKitBtn = document.getElementById('buy-kit-btn');
+export const kitTotalCostEl = document.getElementById('kit-total-cost');
+export const kitStockCountEl = document.getElementById('kit-stock-count');
+export const kitShopStockCountEl = document.getElementById('kit-shop-stock-count');
 
-const buyMatQtyInput = document.getElementById('buy-mat-qty');
-const buyMatBtn = document.getElementById('buy-mat-btn');
-const matTotalCostEl = document.getElementById('mat-total-cost');
-const buyMatTypeSelect = document.getElementById('buy-mat-type');
-const buyMatDrillImg = document.getElementById('buy-mat-drill-img');
+export const buyMatQtyInput = document.getElementById('buy-mat-qty');
+export const buyMatBtn = document.getElementById('buy-mat-btn');
+export const matTotalCostEl = document.getElementById('mat-total-cost');
+export const buyMatTypeSelect = document.getElementById('buy-mat-type');
+export const buyMatDrillImg = document.getElementById('buy-mat-drill-img');
 
-const buyModElecQtyInput = document.getElementById('buy-mod-elec-qty');
-const buyModElecBtn = document.getElementById('buy-mod-elec-btn');
-const modElecTotalCostEl = document.getElementById('mod-elec-total-cost');
-const modElecShopStockEl = document.getElementById('mod-elec-shop-stock');
+export const buyModElecQtyInput = document.getElementById('buy-mod-elec-qty');
+export const buyModElecBtn = document.getElementById('buy-mod-elec-btn');
+export const modElecTotalCostEl = document.getElementById('mod-elec-total-cost');
+export const modElecShopStockEl = document.getElementById('mod-elec-shop-stock');
 
-const buyModSolidQtyInput = document.getElementById('buy-mod-solid-qty');
-const buyModSolidBtn = document.getElementById('buy-mod-solid-btn');
-const modSolidTotalCostEl = document.getElementById('mod-solid-total-cost');
-const modSolidShopStockEl = document.getElementById('mod-solid-shop-stock');
+export const buyModSolidQtyInput = document.getElementById('buy-mod-solid-qty');
+export const buyModSolidBtn = document.getElementById('buy-mod-solid-btn');
+export const modSolidTotalCostEl = document.getElementById('mod-solid-total-cost');
+export const modSolidShopStockEl = document.getElementById('mod-solid-shop-stock');
