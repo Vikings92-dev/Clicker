@@ -204,7 +204,8 @@ function checkProgression(oldState, newState, elapsedSeconds, lootCredit = null)
     const oldByUid = new Map(oldDrills.map(d => [d.uid, d]));
     const union = [...oldDrills, ...newDrills.filter(d => !oldByUid.has(d.uid))];
 
-    let drillRate = 0;
+    // Gain des drills = exactement blocs cassés x récompense (cf. loop.js), et non un débit théorique
+    let drillGain = 0;
     for (let i = 0; i < RULES.phases.length; i++) {
         const rule = RULES.phases[i];
         const newPhase = newState.phases[i];
@@ -214,11 +215,11 @@ function checkProgression(oldState, newState, elapsedSeconds, lootCredit = null)
         if (blocksDelta > bps * (E + LATENCY_SLACK_SECONDS) + 2) {
             return fail('blocks_too_fast', { phase: rule.id, blocksDelta, max: bps * E });
         }
-        drillRate += bps * phaseReward(rule, newPhase);
+        drillGain += Math.max(0, blocksDelta) * phaseReward(rule, newPhase);
     }
 
-    const gainRate = (clickRate + drillRate) * 1.2;
-    const maxGain = gainRate * E;
+    const gainRate = clickRate * 1.2;
+    const maxGain = gainRate * E + drillGain;
     const bankCap = gainRate * LATENCY_SLACK_SECONDS + RULES.burstMaxClicks * clickPower * 2 + 1000;
     const previousBank = lootCredit && Number.isFinite(lootCredit.money) ? Math.max(0, lootCredit.money) : bankCap;
     const moneyBank = Math.min(bankCap, previousBank);

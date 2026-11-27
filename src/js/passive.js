@@ -1,4 +1,6 @@
-function calculateMPS() {
+import { game } from './state.js';
+
+export function calculateMPS() {
     let totalMPS = 0;
 
     game.phases.forEach(p => {

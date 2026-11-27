@@ -1,11 +1,20 @@
-// Authentification par jeton signé Chronos, sauvegarde versionnée et vérification serveur du captcha
-let SAVE_VERSION = 0;
-let saveInFlight = false;
-let savePending = false;
-let autoSaveIntervalId = null;
-let pendingCaptchaToken = null;
+import { API_URL, game } from './state.js';
+import { closeAutoclickerPopup, closeDeploymentModal, initPhases, isSuspendedByCaptcha, refreshShopMatSelect, setSuspendedByCaptcha, showCaptchaPopup, updatePhasePaliersVisuals, updatePickaxeCursor, updateUI } from './function.js';
 
-function showChronosRedirectScreen(message) {
+// Authentification par jeton signé Chronos, sauvegarde versionnée et vérification serveur du captcha
+export let SAVE_VERSION = 0;
+export let saveInFlight = false;
+export let savePending = false;
+export let autoSaveIntervalId = null;
+export let pendingCaptchaToken = null;
+export let PLAYER_NAME = "";
+export let AUTH_TOKEN = "";
+
+export function setPendingCaptchaToken(token) {
+    pendingCaptchaToken = token;
+}
+
+export function showChronosRedirectScreen(message) {
     AUTH_TOKEN = "";
     PLAYER_NAME = "";
     sessionStorage.removeItem('chronos_clicker_token');
@@ -18,7 +27,7 @@ function showChronosRedirectScreen(message) {
     }
 }
 
-function getAuthHeaders(includeJson = false) {
+export function getAuthHeaders(includeJson = false) {
     const headers = {
         'Authorization': `Bearer ${AUTH_TOKEN}`
     };
@@ -28,7 +37,7 @@ function getAuthHeaders(includeJson = false) {
     return headers;
 }
 
-function resetGameState() {
+export function resetGameState() {
     game.money = 0; game.pickaxeTier = 0; game.unlockedDrillTier = 0; game.drillCounterId = 0; game.inventory = [];
     game.repairKits = 0; game.universalRepairs = 0; game.craftParts = 0; game.repairMateriaux = [0, 0, 0, 0, 0];
     game.modulesStock = { electricite: 0, solidite: 0 };
@@ -42,7 +51,7 @@ function resetGameState() {
 }
 
 // Applique un état venant du serveur (chargement, ou correction après une sauvegarde refusée)
-function applySavedState(savedGame) {
+export function applySavedState(savedGame) {
     if (!savedGame) {
         resetGameState();
         return;
@@ -90,7 +99,7 @@ function applySavedState(savedGame) {
     }
 }
 
-function refreshWholeUI() {
+export function refreshWholeUI() {
     if (typeof closeDeploymentModal === 'function') closeDeploymentModal();
     initPhases();
     updateUI();
@@ -101,7 +110,7 @@ function refreshWholeUI() {
 
 // Les sauvegardes sont envoyées une par une : si une sauvegarde est demandée pendant qu'une autre
 // est en cours, elle est regroupée et envoyée juste après (évite les conflits de version).
-async function saveGameToServer() {
+export async function saveGameToServer() {
     if (!AUTH_TOKEN || isSuspendedByCaptcha) return;
     if (saveInFlight) {
         savePending = true;
@@ -120,7 +129,7 @@ async function saveGameToServer() {
     }
 }
 
-async function sendSave() {
+export async function sendSave() {
     try {
         const response = await fetch(`${API_URL}/save`, {
             method: 'POST',
@@ -175,7 +184,7 @@ async function sendSave() {
     }
 }
 
-async function fetchGameFromServer() {
+export async function fetchGameFromServer() {
     const response = await fetch(`${API_URL}/load`, {
         method: 'GET',
         headers: getAuthHeaders(false)
@@ -188,7 +197,7 @@ async function fetchGameFromServer() {
     return response.json();
 }
 
-async function reloadStateFromServer() {
+export async function reloadStateFromServer() {
     try {
         const data = await fetchGameFromServer();
         if (!data) return;
@@ -200,7 +209,7 @@ async function reloadStateFromServer() {
     }
 }
 
-async function loadGameFromServer() {
+export async function loadGameFromServer() {
     if (!AUTH_TOKEN) {
         showChronosRedirectScreen();
         return;
@@ -258,10 +267,10 @@ window.addEventListener('DOMContentLoaded', () => {
     loadGameFromServer();
 });
 
-let activeTimeoutInterval = null;
-let currentActiveWarns = 0;
+export let activeTimeoutInterval = null;
+export let currentActiveWarns = 0;
 
-function updateWarnBadgeUI(warnCount) {
+export function updateWarnBadgeUI(warnCount) {
     currentActiveWarns = warnCount || 0;
     const badge = document.getElementById('player-warn-badge');
     const countEl = document.getElementById('player-warn-count');
@@ -275,9 +284,8 @@ function updateWarnBadgeUI(warnCount) {
         popupStatusEl.innerText = `Avertissement : ${currentActiveWarns} / 3 (expire après 1h)`;
     }
 }
-window.updateWarnBadgeUI = updateWarnBadgeUI;
 
-function formatRemainingTime(ms) {
+export function formatRemainingTime(ms) {
     const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
@@ -290,13 +298,13 @@ function formatRemainingTime(ms) {
     return `${pad(minutes)}m ${pad(seconds)}s`;
 }
 
-function activateTimeoutScreen(timeoutData) {
+export function activateTimeoutScreen(timeoutData) {
     if (!timeoutData || !timeoutData.remaining_seconds || timeoutData.remaining_seconds <= 0) return;
 
     const acPopup = document.getElementById('autoclicker-popup');
     if (acPopup) acPopup.style.display = 'none';
 
-    isSuspendedByCaptcha = true;
+    setSuspendedByCaptcha(true);
 
     const screen = document.getElementById('timeout-screen');
     const reasonEl = document.getElementById('timeout-reason-text');
@@ -317,7 +325,7 @@ function activateTimeoutScreen(timeoutData) {
             clearInterval(activeTimeoutInterval);
             activeTimeoutInterval = null;
             if (screen) screen.style.display = 'none';
-            isSuspendedByCaptcha = false;
+            setSuspendedByCaptcha(false);
             updateWarnBadgeUI(0);
             return;
         }
@@ -329,9 +337,8 @@ function activateTimeoutScreen(timeoutData) {
     tickTimer();
     activeTimeoutInterval = setInterval(tickTimer, 1000);
 }
-window.activateTimeoutScreen = activateTimeoutScreen;
 
-async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
+export async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
     if (!AUTH_TOKEN) return;
     try {
         const response = await fetch(`${API_URL}/warn`, {
@@ -350,10 +357,9 @@ async function reportAutoclickerWarnToServer(reason = 'autoclick_detected') {
         console.error("Erreur lors de l'envoi du warn :", e);
     }
 }
-window.reportAutoclickerWarnToServer = reportAutoclickerWarnToServer;
 
 // Le captcha est validé par le serveur (Cloudflare siteverify) : sans cela, les sauvegardes restent bloquées
-async function submitCaptchaToServer() {
+export async function submitCaptchaToServer() {
     const btn = document.getElementById('btn-close-autoclicker');
     if (!pendingCaptchaToken) return;
 
@@ -384,4 +390,3 @@ async function submitCaptchaToServer() {
     if (btn) btn.innerText = "Échec de la vérification, réessayez";
     if (window.turnstile) window.turnstile.reset('#cf-turnstile-container');
 }
-window.submitCaptchaToServer = submitCaptchaToServer;
