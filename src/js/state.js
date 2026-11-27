@@ -3,6 +3,17 @@ let game = {
     pickaxeTier: 0,
 
     pickaxeNames: ["Pierre", "Fer", "Diamant", "Prismaline", "Véridite", "Bracium", "Aetheris", "Azula"],
+
+    pickaxeCursors: [
+        { src: "/public/StonePickaxe.png",      x: 10, y: 4 },
+        { src: "/public/IronPickaxe.png",       x: 10, y: 4 },
+        { src: "/public/DiamondPickaxe.png",    x: 10, y: 4 },
+        { src: "/public/PrismalinePickaxe.png", x: 10, y: 5 },
+        { src: "/public/VeriditePickaxe.png",   x: 12, y: 4 },
+        { src: "/public/BraciumPickaxe.png",    x: 9,  y: 4 },
+        { src: "/public/AetherisPickaxe.png",   x: 7,  y: 4 },
+        { src: "/public/AzulaPickaxe.png",      x: 12, y: 3 }
+    ],
     
     pickaxePower: [1, 4, 25, 150, 15000, 2500000, 350000000, 15000000000],
     
@@ -63,10 +74,10 @@ let game = {
     ],
 
     paliers: [
-        { id: 1, name: "Dead Coral Block", displayName: "Phase 1 - Palier : Dead Coral Block", bgImage: "/public/stone.png", ajoutReward: 0, nbBlock: 0 },
-        { id: 2, name: "Stone", displayName: "Phase 1 - Palier : Stone", bgImage: "/public/deepslate.png", ajoutReward: 7, nbBlock: 100 },
-        { id: 3, name: "Cobblestone", displayName: "Phase 1 - Palier : Cobblestone", bgImage: "/public/obsidian.png", ajoutReward: 22, nbBlock: 250 },
-        { id: 4, name: "Deepslate", displayName: "Phase 1 - Palier : Deepslate", bgImage: "/public/end_stone.png", ajoutReward: 47, nbBlock: 500 }
+        { id: 1, name: "Dead Coral Block", displayName: "Phase 1 - Palier : Dead Coral Block", bgImage: "/public/dead_coral_block.png", ajoutReward: 0, nbBlock: 0 },
+        { id: 2, name: "Stone", displayName: "Phase 1 - Palier : Stone", bgImage: "/public/stone.png", ajoutReward: 7, nbBlock: 100 },
+        { id: 3, name: "Cobblestone", displayName: "Phase 1 - Palier : Cobblestone", bgImage: "/public/cobblestone.png", ajoutReward: 22, nbBlock: 250 },
+        { id: 4, name: "Deepslate", displayName: "Phase 1 - Palier : Deepslate", bgImage: "/public/deepslate.png", ajoutReward: 47, nbBlock: 500 }
     ],
 
     phases: [
@@ -75,27 +86,27 @@ let game = {
             id: 2, name: "Phase 2", blocks: "Vhoraxis - Névaris", baseResist: 200, reward: 8000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 5000000, activeDrills: [],
             selectedDisplay: 0,
             displays: [
-                { name: "Vhoraxis", bgImage: "/public/background2.png" },
-                { name: "Névaris", bgImage: "/public/background.png" }
+                { name: "Vhoraxis", bgImage: "/public/basalt.png" },
+                { name: "Névaris", bgImage: "/public/packed_ice.png" }
             ]
         },
         {
             id: 3, name: "Phase 3", blocks: "Magmia - Orthelya", baseResist: 2500, reward: 1500000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 1200000000, activeDrills: [],
             selectedDisplay: 0,
             displays: [
-                { name: "Magmia", bgImage: "/public/background2.png" },
-                { name: "Orthelya", bgImage: "/public/background.png" }
+                { name: "Magmia", bgImage: "/public/magma.png" },
+                { name: "Orthelya", bgImage: "/public/blue_ice.png" }
             ]
         },
         {
             id: 4, name: "Phase 4", blocks: "Vulkania - Kryos-Mir", baseResist: 35000, reward: 220000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 250000000000, activeDrills: [],
             selectedDisplay: 0,
             displays: [
-                { name: "Vulkania", bgImage: "/public/background2.png" },
-                { name: "Kryos-Mir", bgImage: "/public/background.png" }
+                { name: "Vulkania", bgImage: "/public/obsidian.png" },
+                { name: "Kryos-Mir", bgImage: "/public/snow.png" }
             ]
         },
-        { id: 5, name: "Phase 5", blocks: "l'oeil de l'univers", baseResist: 500000, reward: 28000000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 45000000000000, activeDrills: [], bgImage: "/public/background2.png" }
+        { id: 5, name: "Phase 5", blocks: "l'oeil de l'univers", baseResist: 500000, reward: 28000000000, progress: 0, blockBrocken: 0, unlocked: false, reqMoney: 45000000000000, activeDrills: [], bgImage: "/public/end_portal.png" }
     ]
 };
 

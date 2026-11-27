@@ -15,7 +15,7 @@ setInterval(() => {
 
     // Régénération passive de l'électricité dans le hangar
     game.inventory.forEach(d => {
-        if (d.elec < d.maxElec) d.elec = Math.min(d.maxElec, d.elec + (1 * dt));
+        if (d.elec < d.maxElec && !d.isHS) d.elec = Math.min(d.maxElec, d.elec + (1 * dt));
     });
 
     ticksCounter++;
@@ -35,9 +35,10 @@ setInterval(() => {
                 }
 
                 if (isOneSecondTick) {
-                    const failRoll = Math.random() * 600; // env toute les 10 minutes
+                    const failRoll = Math.random() * 300; // env toute les 5 minutes
                     if (failRoll < 1) {
                         d.isHS = true;
+                        d.elec = 0;
                         alert(`💥 Votre ${d.name} est HS ! Il ne peut plus être utilisé jusqu'à réparation.`);
                         noElecDrill++;
                         return;

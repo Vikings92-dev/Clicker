@@ -63,3 +63,9 @@ h1, h2, h3, h4, .phase-name, .upgrade-title {
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
+
+*,
+*::before,
+*::after {
+    cursor: var(--pickaxe-cursor, auto) !important;
+}

@@ -159,20 +159,20 @@
 }
 
 /* Teintes minérales par tier */
-.vault-mat-chip.mat-tier-0 { border-color: rgba(91, 192, 190, 0.35); }
-.vault-mat-chip.mat-tier-0 .mat-label { color: #5bc0be; }
+.vault-mat-chip.mat-tier-0 { border-color: rgba(43, 78, 149, 0.75); }
+.vault-mat-chip.mat-tier-0 .mat-label { color: #4572e3; }
 
-.vault-mat-chip.mat-tier-1 { border-color: rgba(80, 250, 123, 0.35); }
-.vault-mat-chip.mat-tier-1 .mat-label { color: #50fa7b; }
+.vault-mat-chip.mat-tier-1 { border-color: rgba(111, 174, 142, 0.75); }
+.vault-mat-chip.mat-tier-1 .mat-label { color: #92d4b2; }
 
-.vault-mat-chip.mat-tier-2 { border-color: rgba(255, 184, 108, 0.35); }
-.vault-mat-chip.mat-tier-2 .mat-label { color: #ffb86c; }
+.vault-mat-chip.mat-tier-2 { border-color: rgba(71, 114, 56, 0.75); }
+.vault-mat-chip.mat-tier-2 .mat-label { color: #8bc34a; }
 
-.vault-mat-chip.mat-tier-3 { border-color: rgba(139, 233, 253, 0.35); }
-.vault-mat-chip.mat-tier-3 .mat-label { color: #8be9fd; }
+.vault-mat-chip.mat-tier-3 { border-color: rgba(121, 230, 221, 0.75); }
+.vault-mat-chip.mat-tier-3 .mat-label { color: #a6eee8; }
 
-.vault-mat-chip.mat-tier-4 { border-color: rgba(189, 147, 249, 0.35); }
-.vault-mat-chip.mat-tier-4 .mat-label { color: #bd93f9; }
+.vault-mat-chip.mat-tier-4 { border-color: rgba(115, 23, 44, 0.75); }
+.vault-mat-chip.mat-tier-4 .mat-label { color: #b4202a; }
 
 /* Modules d'amélioration dans le coffre du hangar */
 .vault-modules-row {
@@ -183,8 +183,8 @@
 }
 
 .module-icon-vault {
-    width: 22px;
-    height: 22px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
     image-rendering: pixelated;
     flex-shrink: 0;
@@ -401,4 +401,17 @@
     color: #50fa7b;
     font-size: 0.9rem;
     text-shadow: 0 0 6px rgba(80, 250, 123, 0.4);
+}
+
+.stock-zero {
+    color: #b4202a !important;
+    text-shadow: 0 0 6px rgba(250, 80, 80, 0.4) !important;
+}
+
+.hs-red {
+    background-color: #91050528 !important;
+}
+
+.hs-red:hover {
+    transform: translateY(-1);
 }

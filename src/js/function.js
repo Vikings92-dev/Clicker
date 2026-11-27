@@ -12,6 +12,22 @@ function getDrillImage(drill) {
     return (template && template.image) || drill.image || '';
 }
 
+let lastAppliedPickaxeTier = -1;
+
+function updatePickaxeCursor(force = false) {
+    if (!force && lastAppliedPickaxeTier === game.pickaxeTier) return;
+    lastAppliedPickaxeTier = game.pickaxeTier;
+
+    const cursorData = (game.pickaxeCursors && game.pickaxeCursors[game.pickaxeTier])
+        || { src: "/public/StonePickaxe.png", x: 10, y: 4 };
+    const cursorValue = `url('${cursorData.src}') ${cursorData.x} ${cursorData.y}, auto`;
+
+    document.documentElement.style.setProperty('--pickaxe-cursor', cursorValue);
+    document.documentElement.style.cursor = cursorValue;
+    document.body.style.cursor = cursorValue;
+}
+window.updatePickaxeCursor = updatePickaxeCursor;
+
 function getDrillModulesKey(drill) {
     const m = (drill && drill.modules) || {};
     return `${m.electricite ? '1' : '0'}-${m.solidite ? '1' : '0'}`;
@@ -53,12 +69,24 @@ function getPhaseBgImage(phase) {
 function setPhaseDisplay(phaseId, displayIndex) {
     const phase = game.phases.find(p => p.id === phaseId);
     if (!phase || !phase.unlocked || !Array.isArray(phase.displays) || !phase.displays[displayIndex]) return;
+    if (phase.selectedDisplay === displayIndex) return;
 
     phase.selectedDisplay = displayIndex;
+    const newSrc = phase.displays[displayIndex].bgImage;
 
     const imgEl = document.getElementById(`image-phase-${phaseId}`);
     if (imgEl) {
-        imgEl.setAttribute('src', phase.displays[displayIndex].bgImage);
+        imgEl.style.opacity = '0';
+        setTimeout(() => {
+            const restoreOpacity = () => {
+                imgEl.style.opacity = '';
+            };
+            imgEl.onload = restoreOpacity;
+            imgEl.setAttribute('src', newSrc);
+            if (imgEl.complete) {
+                restoreOpacity();
+            }
+        }, 220);
     }
 
     const row = document.getElementById(`phase-${phaseId}`);
@@ -103,8 +131,11 @@ function initPhases() {
                     <span class="phase-name" id="phase-title-text-${p.id}">${p.name}</span>
                     <span class="phase-blocks">(${p.blocks})</span>
                 </div>
-                <div id="phase-unlock-status-${p.id}">
-                    ${p.unlocked ? '' : `<button type="button" class="btn-mini btn-action-deploy" id="unlock-phase-btn-${p.id}" disabled>Débloquer (${formatMoney(p.reqMoney)} $)</button>`}
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    ${displaySwitcherHtml}
+                    <div id="phase-unlock-status-${p.id}">
+                        ${p.unlocked ? '' : `<button type="button" class="btn-mini btn-action-deploy" id="unlock-phase-btn-${p.id}" disabled>Débloquer (${formatMoney(p.reqMoney)} $)</button>`}
+                    </div>
                 </div>
             </div>
             <div class="phase-controls" id="controls-${p.id}" style="display: none;">
@@ -149,28 +180,54 @@ function initPhases() {
 let currentDeployPhaseId = null;
 let selectedDrillUids = new Set();
 
-function openDeploymentMenu(phaseId) {
-    if (game.inventory.length === 0) {
-        alert("Votre hangar est vide.");
-        return;
-    }
-
-    currentDeployPhaseId = phaseId;
-    selectedDrillUids.clear();
-
-    const modal = document.getElementById('deployment-modal');
-    const title = document.getElementById('deployment-modal-title');
+function renderDeploymentGrid() {
     const grid = document.getElementById('deployment-drills-grid');
-    const phase = game.phases.find(p => p.id === phaseId);
+    if (!grid) return;
 
-    if (title) title.innerText = `Déploiement vers : ${phase ? phase.name : 'Phase '+ phaseId}`;
+    const primarySortEl = document.getElementById('deploy-sort-primary');
+    const secondarySortEl = document.getElementById('deploy-sort-secondary');
+    const primarySort = primarySortEl ? primarySortEl.value : 'tier-desc';
+    const secondarySort = secondarySortEl ? secondarySortEl.value : 'none';
 
-    if (grid) {
-        grid.innerHTML = '';
+    const deployableDrills = game.inventory.filter(d => !d.isHS);
 
-        game.inventory.forEach((d) => {
+    deployableDrills.sort((a, b) => {
+        // 1. Tri principal par Tier
+        if (primarySort === 'tier-desc' && b.tier !== a.tier) {
+            return (b.tier ?? 0) - (a.tier ?? 0);
+        }
+        if (primarySort === 'tier-asc' && a.tier !== b.tier) {
+            return (a.tier ?? 0) - (b.tier ?? 0);
+        }
+
+        // 2. Tri secondaire (Dura, Élec ou Aucun)
+        const duraA = a.dura ?? 0;
+        const duraB = b.dura ?? 0;
+        const elecA = a.elec ?? 0;
+        const elecB = b.elec ?? 0;
+
+        switch (secondarySort) {
+            case 'dura-desc':
+                return duraB - duraA;
+            case 'dura-asc':
+                return duraA - duraB;
+            case 'elec-desc':
+                return elecB - elecA;
+            case 'elec-asc':
+                return elecA - elecB;
+            default:
+                return 0;
+        }
+    });
+
+    grid.innerHTML = '';
+
+    deployableDrills.forEach((d) => {
         const card = document.createElement('div');
         card.className = "drill-select-card";
+        if (selectedDrillUids.has(d.uid)) {
+            card.classList.add('selected');
+        }
         card.id = `deploy-card-${d.uid}`;
 
         card.innerHTML = `
@@ -189,8 +246,36 @@ function openDeploymentMenu(phaseId) {
 
         grid.appendChild(card);
     });
+}
+window.renderDeploymentGrid = renderDeploymentGrid;
+
+function openDeploymentMenu(phaseId) {
+    if (game.inventory.length === 0) {
+        alert("Votre hangar est vide.");
+        return;
     }
-    
+
+    const deployableDrills = game.inventory.filter(d => !d.isHS);
+    if (deployableDrills.length === 0) {
+        alert("Toutes vos foreuses en stock sont en panne (HS). Réparez-les d'abord dans l'Atelier de Réparation.");
+        return;
+    }
+
+    currentDeployPhaseId = phaseId;
+    selectedDrillUids.clear();
+
+    const primarySortEl = document.getElementById('deploy-sort-primary');
+    const secondarySortEl = document.getElementById('deploy-sort-secondary');
+    if (primarySortEl) primarySortEl.value = 'tier-desc';
+    if (secondarySortEl) secondarySortEl.value = 'none';
+
+    const modal = document.getElementById('deployment-modal');
+    const title = document.getElementById('deployment-modal-title');
+    const phase = game.phases.find(p => p.id === phaseId);
+
+    if (title) title.innerText = `Déploiement vers : ${phase ? phase.name : 'Phase '+ phaseId}`;
+
+    renderDeploymentGrid();
     updateSelectedCountDisplay();
 
     if (modal) modal.style.display = 'flex';
@@ -212,7 +297,7 @@ function toggleSelectAllCardDrills(selectAll) {
     const cards = grid.querySelectorAll('.drill-select-card');
 
     if (selectAll) {
-        game.inventory.forEach(d => selectedDrillUids.add(d.uid));
+        game.inventory.filter(d => !d.isHS).forEach(d => selectedDrillUids.add(d.uid));
         cards.forEach(card => card.classList.add('selected'));
     } else {
         selectedDrillUids.clear();
@@ -409,8 +494,9 @@ function updateCosts() {
     const totalKitPrice = (game.kitCost || 5000) * qty;
     if (kitTotalCostEl) kitTotalCostEl.innerText = formatMoney(totalKitPrice);
     if (buyKitBtn) buyKitBtn.disabled = game.money < totalKitPrice || isPurchaseOnCooldown;
-    if (kitStockCountEl) kitStockCountEl.innerText = game.repairKits || 0;
-    if (kitShopStockCountEl) kitShopStockCountEl.innerText = game.repairKits || 0;
+    const repairKitsStock = game.repairKits || 0;
+    if (kitStockCountEl) kitStockCountEl.innerText = repairKitsStock;
+    if (kitShopStockCountEl) toogleStockZeroStyle('kit-shop-stock-count', repairKitsStock);
 
     // Badges de stocks et craft
     const partsCountEl = document.getElementById('parts-stock-count');
@@ -445,9 +531,7 @@ function updateCosts() {
     const selectedStock = (game.repairMateriaux && game.repairMateriaux[selectedTierIndex]) || 0;
     
     const selectedStockBadge = document.getElementById('selected-mat-stock-count');
-    if (selectedStockBadge) {
-        selectedStockBadge.innerText = selectedStock;
-    }
+    if (selectedStockBadge) toogleStockZeroStyle('selected-mat-stock-count', selectedStock)
 
     const activeMatDrillTemplate = game.drillTemplates[selectedTierIndex];
     if (buyMatDrillImg && activeMatDrillTemplate && buyMatDrillImg.getAttribute('src') !== activeMatDrillTemplate.image) {
@@ -467,10 +551,10 @@ function updateCosts() {
 
     const hangarModElecEl = document.getElementById('hangar-mod-elec');
     const hangarModSolidEl = document.getElementById('hangar-mod-solid');
-    if (hangarModElecEl) hangarModElecEl.innerText = elecStock;
-    if (hangarModSolidEl) hangarModSolidEl.innerText = solidStock;
-    if (modElecShopStockEl) modElecShopStockEl.innerText = elecStock;
-    if (modSolidShopStockEl) modSolidShopStockEl.innerText = solidStock;
+    if (hangarModElecEl) toogleStockZeroStyle('mod-elec-shop-stock', elecStock);
+    if (hangarModSolidEl) toogleStockZeroStyle('mod-solid-shop-stock', solidStock);
+    if (modElecShopStockEl) toogleStockZeroStyle('mod-elec-shop-stock', elecStock);
+    if (modSolidShopStockEl) toogleStockZeroStyle('mod-solid-shop-stock', solidStock);
 
     const qtyModElec = buyModElecQtyInput ? Math.max(1, parseInt(buyModElecQtyInput.value) || 1) : 1;
     const totalModElecPrice = ((game.moduleTemplates && game.moduleTemplates.electricite.cost) || 5000) * qtyModElec;
@@ -512,6 +596,9 @@ function updateUI() {
                 card.className = "drill-card";
                 card.id = `inv-card${d.uid}`;
                 card.dataset.modules = getDrillModulesKey(d);
+                if (d.isHS === true || d.isHS) {
+                    card.classList.add('hs-red');
+                }
                 card.innerHTML = `
                     <img src="${getDrillImage(d)}" alt="${d.name}" class="drill-img">
                     <strong>${d.name}</strong>
@@ -529,6 +616,11 @@ function updateUI() {
                     const elecText = card.querySelector('.elec-text');
                     if (duraText) duraText.innerHTML = `❤️ ${Math.ceil(d.dura)}/${d.maxDura}`;
                     if (elecText) elecText.innerHTML = `⚡ ${Math.ceil(d.elec !== undefined ? d.elec : 0)}/${d.maxElec !== undefined ? d.maxElec : 0}`;
+                    if (d.isHS === true || d.isHS) {
+                        card.classList.add('hs-red');
+                    } else {
+                        card.classList.remove('hs-red');
+                    }
                 }
             });
         }
@@ -1220,13 +1312,30 @@ async function unlockPhase(phaseId) {
         }
 
         const status = document.getElementById(`phase-unlock-status-${phase.id}`);
-        if (status) status.innerHTML = '<span style="font-size:0.9rem; color:#50fa7b;">Débloqué !</span>';
+        if (status) status.innerHTML = "";
 
         const deployBtn = document.getElementById(`deploy-to-${phase.id}`);
         if (deployBtn) deployBtn.disabled = false;
 
+        if (row) {
+            row.querySelectorAll('.display-opt-btn').forEach(btn => {
+                btn.disabled = false;
+            });
+        }
+
         triggerPurchaseCooldown();
         updateUI();
         await saveGameToServer();
+    }
+}
+
+function toogleStockZeroStyle(elementId, stock) {
+    const element = document.getElementById(elementId);
+    if (!element) return
+    element.innerText = stock;
+    if (stock === 0) {
+        element.classList.add('stock-zero');
+    } else {
+        element.classList.remove('stock-zero');
     }
 }

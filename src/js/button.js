@@ -99,6 +99,7 @@ upgradePickaxeBtn.addEventListener('click', async () => {
         game.money -= cost;
         game.pickaxeTier++;
         updateUI();
+        updatePickaxeCursor();
         await saveGameToServer();
     }
 });

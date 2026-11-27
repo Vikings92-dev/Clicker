@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copper Clicker</title>
+    <title>MYRA Clicker</title>
+    <link rel="icon" type="image/png" href="/public/favicon.png">
 
     <!-- Styles de base -->
     <link rel="stylesheet" href="css/base.css">
@@ -81,7 +82,7 @@
     <!-- Écran de connexion -->
     <div id="login-screen" class="screen-overlay">
         <div class="login-box">
-            <h2>Copper Clicker</h2>
+            <h2>MYRA Clicker</h2>
             <p>Authentification requise via votre compte Projet Chronos pour accéder à la mine.</p>
             <a href="http://localhost:3000" class="btn" id="login-redirect-btn" style="display: inline-block; text-decoration: none; text-align: center;">
                 Se connecter sur Projet Chronos
@@ -96,8 +97,26 @@
             <p class="deployment-subtitle">Cliquez sur les cartes pour les sélectionner ou utilisez les boutons rapides.</p>
             
             <div class="deployment-actions-bar">
-                <button type="button" class="btn-mini" onclick="toggleSelectAllCardDrills(true)">Tout sélectionner</button>
-                <button type="button" class="btn-mini" onclick="toggleSelectAllCardDrills(false)">Tout désélectionner</button>
+                <div class="deployment-select-btns">
+                    <button type="button" class="deploy-ctrl-btn" onclick="toggleSelectAllCardDrills(true)">Tout sélectionner</button>
+                    <button type="button" class="deploy-ctrl-btn" onclick="toggleSelectAllCardDrills(false)">Tout désélectionner</button>
+                </div>
+
+                <div class="deployment-sort-group">
+                    <select id="deploy-sort-primary" class="deploy-select" onchange="renderDeploymentGrid()">
+                        <option value="tier-desc" selected>Tier (Haut → Bas)</option>
+                        <option value="tier-asc">Tier (Bas → Haut)</option>
+                        <option value="none">Tier : Sans tri</option>
+                    </select>
+
+                    <select id="deploy-sort-secondary" class="deploy-select" onchange="renderDeploymentGrid()">
+                        <option value="none" selected>Tri secondaire : Aucun</option>
+                        <option value="dura-desc">Durabilité (Haut → Bas)</option>
+                        <option value="dura-asc">Durabilité (Bas → Haut)</option>
+                        <option value="elec-desc">Électricité (Haut → Bas)</option>
+                        <option value="elec-asc">Électricité (Bas → Haut)</option>
+                    </select>
+                </div>
             </div>
 
             <div id="deployment-drills-grid">
@@ -345,7 +364,7 @@
     <!-- PANNEAU GAUCHE : CLIC & PIOCHE -->
     <div class="left-panel">
         <div class="header">
-            <h1>Copper Clicker</h1>
+            <h1>MYRA Clicker</h1>
             <div class="stats-container">
                 <div>Argent Global</div>
                 <div class="money-display" id="money">0.00 $</div>
@@ -403,7 +422,7 @@
                         <div class="vault-slot" title="Réparation Universelle (100% durabilité, ne répare pas les pannes HS)">
                             <span class="slot-icon">✨</span>
                             <div class="slot-data">
-                                <span class="slot-name">Univ.</span>
+                                <span class="slot-name">Universel</span>
                                 <strong class="slot-value slot-univ" id="univ-stock-count">0</strong>
                             </div>
                         </div>

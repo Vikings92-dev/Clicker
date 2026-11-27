@@ -132,6 +132,7 @@ async function loadGameFromServer() {
 
         initPhases();
         updateUI();
+        if (typeof updatePickaxeCursor === 'function') updatePickaxeCursor(true);
         updatePhasePaliersVisuals();
         setInterval(saveGameToServer, 30000);
     } catch (error) {

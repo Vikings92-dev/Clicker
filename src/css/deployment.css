@@ -3,7 +3,7 @@
    ========================================= */
 
 #deployment-modal {
-    display: none; /* Affiché dynamiquement via JS */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -40,9 +40,72 @@
 }
 
 .deployment-actions-bar {
-    display: flex;
-    gap: 10px;
+    background: linear-gradient(135deg, rgba(38, 28, 22, 0.95) 0%, rgba(20, 15, 12, 0.98) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    border-radius: 6px;
+    padding: 8px 10px;
     margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
+}
+
+.deployment-select-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.deployment-sort-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    gap: 8px;
+}
+
+.deploy-ctrl-btn {
+    padding: 6px 10px;
+    font-family: var(--font-title);
+    font-size: 0.78rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    border: 1px solid #423530;
+    background: #231d1b;
+    color: #cbd5e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+}
+
+.deploy-ctrl-btn:hover {
+    border-color: var(--brass, #c5a059);
+    color: #fff;
+    filter: brightness(1.15);
+}
+
+.deploy-select {
+    width: 100%;
+    padding: 6px 10px;
+    font-family: var(--font-text);
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #423530;
+    background: #171311;
+    color: #e2e8f0;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deploy-select:hover,
+.deploy-select:focus {
+    border-color: var(--brass, #c5a059);
+    box-shadow: 0 0 6px rgba(197, 160, 89, 0.25);
 }
 
 #deployment-drills-grid {

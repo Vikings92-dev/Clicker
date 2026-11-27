@@ -49,8 +49,15 @@
     font-family: var(--font-text);
 }
 
-.btn-mini:hover {
+.btn-mini:hover:not(:disabled) {
     background: #b33227;
+}
+
+.btn-mini:disabled {
+    background: #231d1b;
+    border-color: #423530;
+    color: #5c4a43;
+    cursor: not-allowed;
 }
 
 .btn-action-deploy {
@@ -263,4 +270,8 @@
     border-color: var(--brass);
     background: rgba(197, 160, 89, 0.2);
     color: #fff;
+}
+
+.phase-bg-img {
+    transition: opacity 0.25s ease-in-out;
 }

@@ -26,3 +26,27 @@ T1 : Vhoraxis, Névaris
 T2 : Magmia, Orthelya
 T3 : Vulkania, Kryos-Mir
 T4 : l'oeil de l'univers
+
+
+
+
+taille icone module
+couleur T0-T4 (matériaux)
+couleur déblocage phase
+dans le stock 0 si rouge (magasin)
+Changer le nom
+illustration des phases
+changement Feu / Glace
+
+Bloc phases : 
+1
+G - Packed Ice
+F - Basalt
+2
+G - Blue ice
+F - Magma Block
+3
+G - Snow
+F - Obsidian
+4
+End portal
