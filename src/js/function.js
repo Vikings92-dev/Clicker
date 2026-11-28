@@ -852,9 +852,9 @@ export function switchRepairTab(tabName) {
     [btnHs, btnDura, btnModules].forEach(btn => {
         if (btn) {
             btn.classList.remove('active');
-            btn.style.background = '#231d1b';
-            btn.style.borderColor = '#423530';
-            btn.style.color = '#cbd5e0';
+            btn.style.background = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
         }
     });
 
@@ -863,27 +863,12 @@ export function switchRepairTab(tabName) {
     if (modulesSelector) modulesSelector.style.display = (currentRepairTab === 'modules') ? 'grid' : 'none';
 
     if (currentRepairTab === 'hs') {
-        if (btnHs) {
-            btnHs.classList.add('active');
-            btnHs.style.background = 'linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%)';
-            btnHs.style.borderColor = 'var(--brass)';
-            btnHs.style.color = '#fff';
-        }
+        if (btnHs) btnHs.classList.add('active');
         if (instructions) instructions.innerText = "Cliquez sur une foreuse en panne (HS) pour tenter une remise en service (consomme 1 Caisse à outils, ne répare pas la durabilité).";
     } else if (currentRepairTab === 'dura') {
-        if (btnDura) {
-            btnDura.classList.add('active');
-            btnDura.style.background = 'linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%)';
-            btnDura.style.borderColor = 'var(--brass)';
-            btnDura.style.color = '#fff';
-        }
+        if (btnDura) btnDura.classList.add('active');
     } else if (currentRepairTab === 'modules') {
-        if (btnModules) {
-            btnModules.classList.add('active');
-            btnModules.style.background = 'linear-gradient(180deg, #2b6cb0 0%, #1a365d 100%)';
-            btnModules.style.borderColor = '#8be9fd';
-            btnModules.style.color = '#fff';
-        }
+        if (btnModules) btnModules.classList.add('active');
         if (instructions) instructions.innerText = "Cochez les modules souhaités puis cliquez sur une foreuse pour les installer à vie (irréversible).";
     }
 
@@ -953,7 +938,7 @@ export function renderRepairGrid() {
     grid.innerHTML = '';
 
     if (game.inventory.length === 0) {
-        grid.innerHTML = '<span style="color: #6272a4; font-size:0.85rem; grid-column: 1 / -1; text-align: center;">Aucun drill dans le hangar.</span>';
+        grid.innerHTML = '<span style="color: #5d5366; font-size:0.85rem; grid-column: 1 / -1; text-align: center;">Aucun drill dans le hangar.</span>';
         return;
     }
 

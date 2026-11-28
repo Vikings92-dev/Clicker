@@ -1,69 +1,70 @@
 /* =========================================
-   COMPOSANTS RÉUTILISABLES
+   COMPOSANTS RÉUTILISABLES - THEME ROSE/VIOLET
    ========================================= */
 
-/* Boutons globaux */
+/* =========================================
+   BOUTONS GLOBAUX
+   ========================================= */
+
+/* MODIF: Lisibilité améliorée (texte clair sur dégradé) et transition fluide sans changer la palette */
 .btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(180deg, var(--copper-main) 0%, var(--copper-dark) 100%);
-    border: 1px solid var(--brass);
-    border-radius: 4px;
-    color: var(--text-main);
+    background: linear-gradient(180deg, var(--primary-rose) 0%, var(--primary-violet) 100%);
+    border: 1px solid var(--primary-violet);
+    border-radius: 6px;
+    color: var(--background-main);
     font-family: var(--font-text);
     font-weight: bold;
+    letter-spacing: 0.4px;
     cursor: pointer;
-    transition: filter 0.2s, background 0.2s;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    transition: filter 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    text-shadow: 0 1px 2px rgba(12, 9, 11, 0.45);
 }
 
 .btn:hover:not(:disabled) {
-    filter: brightness(1.2);
+    filter: brightness(1.15);
+    box-shadow: var(--shadow-rose);
+    transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+    background: var(--primary-violet);
 }
 
 .btn:disabled {
-    background: #231d1b;
-    border-color: #423530;
-    color: #5c4a43;
+    background: #d9d2d8;                    /* Gris clair */
+    border-color: #b773c3;                  /* Bordure rose */
+    color: #6b606f;                         /* Texte gris foncé */
     cursor: not-allowed;
     text-shadow: none;
 }
 
-/* Titres d'amélioration (panneaux gauche et droit) */
-.upgrade-title {
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: var(--brass);
-    font-size: 1.1rem;
-}
-
-/* Petits boutons d'action */
 .btn-mini {
     padding: 4px 10px;
     font-size: 0.75rem;
-    background: #7a211a;
-    border: 1px solid #ff5555;
+    background: var(--primary-rose);        /* Rose */
+    border: 1px solid var(--primary-violet); /* Violet */
     border-radius: 4px;
-    color: #fff;
+    color: #f7f4f8;                         /* Blanc doux */
     cursor: pointer;
     font-family: var(--font-text);
 }
 
 .btn-mini:hover:not(:disabled) {
-    background: #b33227;
-}
-
-.btn-mini:disabled {
-    background: #231d1b;
-    border-color: #423530;
-    color: #5c4a43;
-    cursor: not-allowed;
+    background: var(--primary-violet);
 }
 
 .btn-action-deploy {
-    background: linear-gradient(180deg, var(--brass) 0%, #8c6d35 100%);
-    color: var(--text-dark);
-    border-color: var(--text-dark);
+    background: linear-gradient(180deg, var(--primary-violet) 0%, #6a047e 100%);
+    color: white;
+    border-color: var(--text-main);
+    font-weight: bold;
+}
+
+.btn-action-deploy:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--primary-violet) 0%, #5e0276 100%);
 }
 
 /* =========================================
@@ -71,8 +72,8 @@
    ========================================= */
 .progress-container {
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--panel-border);
+    background-color: var(--surface-subtle);
+    border: 1px solid #dcaaf3;
     border-radius: 4px;
     overflow: hidden;
     height: 16px;
@@ -82,8 +83,9 @@
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--copper-dark) 0%, var(--copper-light) 100%);
+    background: linear-gradient(90deg, var(--primary-violet) 0%, var(--primary-rose) 100%);
     width: 0%;
+    transition: width 0.3s ease;
 }
 
 .bar-text {
@@ -94,8 +96,8 @@
     font-weight: bold;
     font-family: var(--font-mono);
     top: -1px;
-    color: #fff;
-    text-shadow: 1px 1px 2px #000;
+    color: var(--primary-violet);
+    text-shadow: 1px 1px 2px #fff;
 }
 
 /* =========================================
@@ -104,8 +106,8 @@
 
 /* Puces de foreuses en stock */
 .drill-card {
-    background: var(--panel-glass-dark);
-    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    border: 1px solid #dcaaf3;
     border-radius: 4px;
     padding: 8px 10px;
     width: 100%;
@@ -118,15 +120,23 @@
     flex-direction: column;
     align-items: center;
     gap: 3px;
+    transition: all 0.2s ease;
 }
 
 .drill-card:hover {
-    border-color: var(--copper-light);
-    box-shadow: 0 0 10px rgba(217, 123, 72, 0.4);
+    border-color: var(--primary-rose);
+    box-shadow: 0 0 15px rgba(183, 115, 195, 0.3);
     transform: translateY(-2px);
 }
 
-/* Images des drills (sprites 32x32) */
+/* Carte sélectionnée pour le déploiement */
+.drill-card.selected {
+    background: rgba(183, 115, 195, 0.1);
+    border-color: var(--primary-rose);
+    box-shadow: 0 0 12px rgba(183, 115, 195, 0.2);
+}
+
+/* Images des drills (sprites) */
 .drill-img {
     width: 42px;
     height: 42px;
@@ -142,8 +152,8 @@
     object-fit: contain;
     image-rendering: pixelated;
     flex-shrink: 0;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(197, 160, 89, 0.3);
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid #dcaaf3;
     border-radius: 6px;
     padding: 4px;
 }
@@ -176,24 +186,24 @@
     height: 18px;
     object-fit: contain;
     image-rendering: pixelated;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(197, 160, 89, 0.45);
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid #dcaaf3;
     border-radius: 4px;
     padding: 1px;
 }
 
 .stat-item {
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--surface-subtle);
     padding: 6px 10px;
     border-radius: 4px;
-    border-left: 2px solid var(--brass);
+    border-left: 3px solid var(--primary-violet);
 }
 
 /* Foreuses déployées sous la ligne de phase */
 .drill-deployed-item {
-    background: var(--panel-glass-dark);
-    border: 1px solid var(--panel-border);
-    border-left: 4px solid var(--copper-light);
+    background: var(--panel-bg);
+    border: 1px solid #dcaaf3;
+    border-left: 4px solid var(--primary-rose);
     padding: 6px 12px;
     border-radius: 4px;
     display: flex;
@@ -201,22 +211,61 @@
     align-items: center;
     font-size: 0.85rem;
     margin-top: 4px;
+    box-shadow: var(--shadow-primary);
 }
 
 /* =========================================
-   INDICATEUR FLOTTANT DE LOOT AU CLIC
+   BADGES DE MATÉRIAUX PAR TIER
    ========================================= */
+.mat-tier-badge {
+    background: var(--surface-subtle);
+    border: 1px solid #dcaaf3;
+    border-radius: 4px;
+    padding: 3px 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.74rem;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}
+
+.mat-tier-badge strong {
+    color: var(--primary-violet);
+}
+
+.mat-tier-badge.locked {
+    opacity: 0.5;
+    border-style: dashed;
+    border-color: #dcaaf3;
+}
+
+.mat-tier-badge.selected {
+    border-color: var(--primary-rose);
+    background: rgba(183, 115, 195, 0.15);
+    color: var(--text-main);
+}
+
+.phase-bg-img {
+    transition: opacity 0.25s ease-in-out;
+}
+
+/* =========================================
+   INDICATEURS ET ANIMATIONS
+   ========================================= */
+/* Indicateur de loot flottant */
 .floating-loot-indicator {
     position: absolute;
     pointer-events: none;
     font-family: var(--font-text);
     font-weight: bold;
     font-size: 0.95rem;
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.95), 1px 1px 3px #000;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 1px 1px 3px #fff;
     z-index: 1000;
     transform: translate(-50%, -50%);
     animation: floatLootAnim 1.2s ease-out forwards;
     white-space: nowrap;
+    color: var(--primary-violet);
 }
 
 @keyframes floatLootAnim {
@@ -233,7 +282,7 @@
     }
     80% {
         opacity: 1;
-        transform: translate(-50%, -65px);
+        transform: translate(-50%, -65px) scale(1);
     }
     100% {
         opacity: 0;
@@ -242,36 +291,28 @@
 }
 
 /* =========================================
-   BADGES DE MATÉRIAUX PAR TIER
+   INPUTS ET FORMULAIRES
    ========================================= */
-.mat-tier-badge {
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+input[type="text"],
+input[type="number"],
+select {
+    padding: 8px 12px;
+    border: 1px solid #dcaaf3;
     border-radius: 4px;
-    padding: 3px 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.74rem;
-    font-family: var(--font-mono);
-    color: #cbd5e0;
+    font-family: var(--font-text);
+    color: var(--text-main);
+    background-color: var(--background-main);
 }
 
-.mat-tier-badge strong {
-    color: #50fa7b;
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-rose);
+    box-shadow: 0 0 0 3px rgba(183, 115, 195, 0.2);
 }
 
-.mat-tier-badge.locked {
-    opacity: 0.4;
-    border-style: dashed;
-}
-
-.mat-tier-badge.selected {
-    border-color: var(--brass);
-    background: rgba(197, 160, 89, 0.2);
-    color: #fff;
-}
-
-.phase-bg-img {
-    transition: opacity 0.25s ease-in-out;
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--primary-violet);
 }

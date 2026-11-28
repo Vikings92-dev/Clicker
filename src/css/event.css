@@ -18,25 +18,25 @@
     transform: scale(1.15);
 }
 
-/* 1. Palier Commun (Vert émeraude) */
+/* 1. Palier Commun (Violet clair) */
 .orb-common {
-    background: radial-gradient(circle, #55efc4 0%, #00b894 100%);
-    border: 3px solid #55efc4;
-    box-shadow: 0 0 22px #00b894, 0 0 10px #55efc4;
+    background: radial-gradient(circle, #dcaaf3 0%, var(--primary-violet) 100%);
+    border: 3px solid var(--primary-violet);
+    box-shadow: 0 0 22px var(--primary-violet), 0 0 10px var(--primary-light);
 }
 
-/* 2. Palier Rare (Jaune ambré / Doré clair) */
+/* 2. Palier Rare (Rose) */
 .orb-medium {
-    background: radial-gradient(circle, #ffeaa7 0%, #fdcb6e 100%);
-    border: 3px solid #ffeaa7;
-    box-shadow: 0 0 25px #fdcb6e, 0 0 12px #ffeaa7;
+    background: radial-gradient(circle, var(--primary-rose) 0%, #dcaaf3 100%);
+    border: 3px solid var(--primary-rose);
+    box-shadow: 0 0 25px var(--primary-rose), 0 0 12px var(--primary-violet);
 }
 
-/* 3. Palier Légendaire (Or impérial étincelant) */
+/* 3. Palier Légendaire (Violet foncé) */
 .orb-legendary {
-    background: radial-gradient(circle, #fff275 0%, #d4af37 50%, #e17055 100%);
-    border: 3px solid #ffd700;
-    box-shadow: 0 0 30px #ffd700, 0 0 15px #e17055;
+    background: radial-gradient(circle, #dcaaf3 0%, var(--primary-violet) 50%, #6a047e 100%);
+    border: 3px solid var(--primary-violet);
+    box-shadow: 0 0 30px var(--primary-violet), 0 0 15px var(--primary-rose);
 }
 
 @keyframes orbPulse {
@@ -72,14 +72,14 @@
 /* Texte flottant lors du clic sur l'orbe */
 .event-toast {
     position: absolute;
-    color: #ffd700;
+    color: var(--primary-violet);
     font-weight: 800;
     font-size: 1.1rem;
     font-family: var(--font-title);
     pointer-events: none;
     z-index: 110;
     animation: toastFloat 1.2s forwards ease-out;
-    text-shadow: 0 0 8px #000, 0 0 4px #000;
+    text-shadow: 0 0 8px rgba(132, 11, 150, 0.5), 0 0 4px rgba(132, 11, 150, 0.3);
 }
 
 @keyframes toastFloat {

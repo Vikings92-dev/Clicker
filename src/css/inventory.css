@@ -1,18 +1,18 @@
 /* =========================================
-   ÉCRAN ET COMPOSANTS D'INVENTAIRE (THÈME STEAMPUNK / CHRONOS)
+   ÉCRAN ET COMPOSANTS D'INVENTAIRE (THEME ROSE/VIOLET)
    ========================================= */
 
 #inventory-screen {
-    display: none; /* Affiché dynamiquement à la demande */
+    display: none;
 }
 
 .inventory-box {
-    border-color: var(--brass);
-    box-shadow: 0 10px 35px rgba(197, 160, 89, 0.4);
+    border-color: var(--primary-violet);
+    box-shadow: 0 10px 35px rgba(132, 11, 150, 0.4);
 }
 
 .inventory-title {
-    color: var(--copper-light);
+    color: var(--primary-rose);
     font-family: var(--font-title);
 }
 
@@ -22,18 +22,18 @@
 
 .workshop-vault {
     margin-top: 10px;
-    background: linear-gradient(180deg, rgba(28, 22, 18, 0.95) 0%, rgba(16, 12, 10, 0.95) 100%);
-    border: 1px solid var(--panel-border);
+    background: var(--surface-subtle);
+    border: 1px solid var(--primary-violet);
     border-radius: 6px;
     padding: 10px;
-    box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 0 16px rgba(132, 11, 150, 0.12), var(--shadow-primary);
 }
 
 .vault-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+    border-bottom: 1px solid var(--primary-violet);
     padding-bottom: 5px;
     margin-bottom: 8px;
 }
@@ -41,11 +41,14 @@
 .vault-title {
     font-family: var(--font-title);
     font-size: 0.76rem;
-    color: var(--brass);
+    color: var(--primary-violet);
     letter-spacing: 1px;
     text-transform: uppercase;
     font-weight: bold;
-    text-shadow: 0 0 6px rgba(197, 160, 89, 0.35);
+}
+
+[data-theme="dark"] .vault-title {
+    color: var(--primary-rose);
 }
 
 /* Grille des consommables rapides */
@@ -57,8 +60,8 @@
 }
 
 .vault-slot {
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(197, 160, 89, 0.2);
+    background: var(--surface-card);
+    border: 1px solid var(--primary-violet);
     border-radius: 4px;
     padding: 6px;
     display: flex;
@@ -69,16 +72,15 @@
 }
 
 .vault-slot:hover {
-    border-color: var(--brass);
-    background: rgba(197, 160, 89, 0.12);
+    border-color: var(--primary-rose);
+    background: rgba(183, 115, 195, 0.14);
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 6px rgba(132, 11, 150, 0.2);
 }
 
 .vault-slot .slot-icon {
     font-size: 1.15rem;
     line-height: 1;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.8));
 }
 
 .vault-slot .slot-data {
@@ -90,7 +92,7 @@
 
 .vault-slot .slot-name {
     font-size: 0.65rem;
-    color: #a0aec0;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -101,19 +103,18 @@
     font-weight: bold;
 }
 
-.vault-slot .slot-kits {
-    color: #f1fa8c;
-    text-shadow: 0 0 6px rgba(241, 250, 140, 0.3);
-}
-
+.vault-slot .slot-kits,
 .vault-slot .slot-parts {
-    color: #8be9fd;
-    text-shadow: 0 0 6px rgba(139, 233, 253, 0.3);
+    color: var(--primary-violet);
 }
 
 .vault-slot .slot-univ {
-    color: #50fa7b;
-    text-shadow: 0 0 6px rgba(80, 250, 123, 0.3);
+    color: var(--primary-rose);
+}
+
+[data-theme="dark"] .vault-slot .slot-kits,
+[data-theme="dark"] .vault-slot .slot-parts {
+    color: var(--primary-light);
 }
 
 /* Râtelier horizontal des minerais de réparation (T0 à T4) */
@@ -121,10 +122,10 @@
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 4px;
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--surface-card);
     padding: 5px 6px;
     border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-violet);
 }
 
 .vault-mat-chip {
@@ -135,14 +136,14 @@
     padding: 3px 2px;
     border-radius: 4px;
     border: 1px solid transparent;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--surface-subtle);
     transition: all 0.2s ease;
     cursor: default;
 }
 
 .vault-mat-chip:hover {
     transform: translateY(-1px);
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(183, 115, 195, 0.14);
 }
 
 .vault-mat-chip .mat-label {
@@ -155,24 +156,28 @@
 .vault-mat-chip .mat-count {
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    color: #fff;
+    font-weight: bold;
+    color: var(--text-main);
 }
 
 /* Teintes minérales par tier */
-.vault-mat-chip.mat-tier-0 { border-color: rgba(43, 78, 149, 0.75); }
-.vault-mat-chip.mat-tier-0 .mat-label { color: #4572e3; }
+.vault-mat-chip.mat-tier-0 { border-color: var(--primary-violet); }
+.vault-mat-chip.mat-tier-0 .mat-label { color: var(--primary-violet); }
+[data-theme="dark"] .vault-mat-chip.mat-tier-0 .mat-label { color: var(--primary-light); }
 
-.vault-mat-chip.mat-tier-1 { border-color: rgba(111, 174, 142, 0.75); }
-.vault-mat-chip.mat-tier-1 .mat-label { color: #92d4b2; }
+.vault-mat-chip.mat-tier-1 { border-color: var(--primary-rose); }
+.vault-mat-chip.mat-tier-1 .mat-label { color: var(--primary-rose); }
 
-.vault-mat-chip.mat-tier-2 { border-color: rgba(71, 114, 56, 0.75); }
+.vault-mat-chip.mat-tier-2 { border-color: #8bc34a; }
 .vault-mat-chip.mat-tier-2 .mat-label { color: #8bc34a; }
 
-.vault-mat-chip.mat-tier-3 { border-color: rgba(121, 230, 221, 0.75); }
-.vault-mat-chip.mat-tier-3 .mat-label { color: #a6eee8; }
+.vault-mat-chip.mat-tier-3 { border-color: #4dd0e1; }
+.vault-mat-chip.mat-tier-3 .mat-label { color: #0097a7; }
+[data-theme="dark"] .vault-mat-chip.mat-tier-3 .mat-label { color: #80deea; }
 
-.vault-mat-chip.mat-tier-4 { border-color: rgba(115, 23, 44, 0.75); }
-.vault-mat-chip.mat-tier-4 .mat-label { color: #b4202a; }
+.vault-mat-chip.mat-tier-4 { border-color: var(--primary-violet); }
+.vault-mat-chip.mat-tier-4 .mat-label { color: var(--primary-violet); }
+[data-theme="dark"] .vault-mat-chip.mat-tier-4 .mat-label { color: var(--primary-rose); }
 
 /* Modules d'amélioration dans le coffre du hangar */
 .vault-modules-row {
@@ -191,12 +196,84 @@
 }
 
 /* =========================================
+   MODALE DE L'ATELIER DE RÉPARATION
+   ========================================= */
+
+.repair-modal-layer {
+    z-index: 10000;
+}
+
+.repair-box {
+    max-width: 650px;
+    width: 92%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    padding: 22px;
+}
+
+.repair-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--primary-violet);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.repair-modal-title {
+    margin: 0;
+    color: var(--primary-rose);
+}
+
+.repair-instructions {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 10px 0;
+}
+
+.repair-drills-grid {
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--primary-violet);
+    border-radius: 8px;
+    background: var(--surface-subtle);
+}
+
+.repair-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.univ-star-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.stock-accent-violet {
+    color: var(--primary-violet);
+}
+
+[data-theme="dark"] .stock-accent-violet {
+    color: var(--primary-light);
+}
+
+.stock-accent-rose {
+    color: var(--primary-rose);
+}
+
+/* =========================================
    ÉTABLI DE FABRICATION & ONGLETS DE RÉPARATION
    ========================================= */
 
 .repair-craft-box {
-    background: linear-gradient(135deg, rgba(38, 28, 22, 0.95) 0%, rgba(20, 15, 12, 0.98) 100%);
-    border: 1px solid var(--brass);
+    background: var(--surface-card);
+    border: 1px solid var(--primary-violet);
     border-radius: 6px;
     padding: 10px 14px;
     margin-bottom: 12px;
@@ -205,7 +282,7 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.7), 0 3px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-primary);
 }
 
 .craft-left {
@@ -217,16 +294,20 @@
     font-family: var(--font-title);
     font-weight: bold;
     font-size: 0.88rem;
-    color: var(--brass);
+    color: var(--primary-violet);
     display: flex;
     align-items: center;
     gap: 6px;
     letter-spacing: 0.5px;
 }
 
+[data-theme="dark"] .craft-title {
+    color: var(--primary-rose);
+}
+
 .craft-cost-desc {
     font-size: 0.76rem;
-    color: #a0aec0;
+    color: var(--text-secondary);
     margin-top: 3px;
     display: flex;
     align-items: center;
@@ -239,8 +320,8 @@
 }
 
 .craft-stock-pill {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(139, 233, 253, 0.3);
+    background: var(--surface-subtle);
+    border: 1px solid var(--primary-violet);
     border-radius: 4px;
     padding: 1px 6px;
     font-family: var(--font-mono);
@@ -258,7 +339,7 @@
     flex-wrap: wrap;
 }
 
-/* Sélecteur de modules (checkboxes dans l'onglet Modules) */
+/* Sélecteur de modules */
 .modules-selector-box {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -271,8 +352,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: linear-gradient(135deg, rgba(38, 28, 22, 0.95) 0%, rgba(20, 15, 12, 0.98) 100%);
-    border: 1px solid rgba(197, 160, 89, 0.35);
+    background: var(--surface-card);
+    border: 1px solid var(--primary-violet);
     border-radius: 6px;
     cursor: pointer;
     text-align: left;
@@ -281,19 +362,19 @@
 }
 
 .module-checkbox-card:hover {
-    border-color: var(--brass);
-    background: rgba(197, 160, 89, 0.12);
+    border-color: var(--primary-rose);
+    background: rgba(183, 115, 195, 0.12);
 }
 
 .module-checkbox-card:has(input:checked) {
-    border-color: #8be9fd;
-    box-shadow: 0 0 10px rgba(139, 233, 253, 0.25);
+    border-color: var(--primary-violet);
+    box-shadow: 0 0 10px rgba(132, 11, 150, 0.25);
 }
 
 .module-checkbox-card input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #8be9fd;
+    accent-color: var(--primary-violet);
     cursor: pointer;
     flex-shrink: 0;
 }
@@ -311,11 +392,11 @@
     flex-direction: column;
     gap: 2px;
     font-size: 0.78rem;
-    color: #cbd5e0;
+    color: var(--text-secondary);
 }
 
 .module-checkbox-info strong {
-    color: #fff;
+    color: var(--text-main);
     font-size: 0.82rem;
 }
 
@@ -324,12 +405,12 @@
 }
 
 .dura-univ-checkbox:has(input:checked) {
-    border-color: #50fa7b;
-    box-shadow: 0 0 10px rgba(80, 250, 123, 0.25);
+    border-color: var(--primary-rose);
+    box-shadow: 0 0 10px rgba(183, 115, 195, 0.25);
 }
 
 .dura-univ-checkbox input[type="checkbox"] {
-    accent-color: #50fa7b;
+    accent-color: var(--primary-rose);
 }
 
 .module-checkbox-card.disabled-option {
@@ -345,38 +426,59 @@
     font-weight: bold;
     letter-spacing: 0.5px;
     border-radius: 4px;
-    border: 1px solid #423530;
-    background: #231d1b;
-    color: #cbd5e0;
+    border: 1px solid var(--primary-violet);
+    background: var(--surface-card);
+    color: var(--text-main);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     transition: all 0.2s ease;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .repair-tab-btn:hover {
-    border-color: var(--brass);
-    color: #fff;
-    filter: brightness(1.15);
+    border-color: var(--primary-rose);
+    color: var(--primary-violet);
+}
+
+[data-theme="dark"] .repair-tab-btn:hover {
+    color: var(--primary-rose);
+}
+
+.repair-tab-btn.active {
+    background: linear-gradient(180deg, var(--primary-rose) 0%, var(--primary-violet) 100%);
+    border-color: var(--primary-violet);
+    color: #f7f4f8;
+    text-shadow: 0 1px 2px rgba(12, 9, 11, 0.45);
+    box-shadow: var(--shadow-rose);
 }
 
 .tab-count-badge {
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(183, 115, 195, 0.15);
     padding: 1px 7px;
     border-radius: 10px;
     font-family: var(--font-mono);
     font-size: 0.74rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #f1fa8c;
+    border: 1px solid var(--primary-violet);
+    color: var(--primary-rose);
+}
+
+.repair-tab-btn.active .tab-count-badge {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: #f7f4f8;
+    color: #f7f4f8;
 }
 
 .tab-badge-sub {
     font-size: 0.72rem;
-    color: #a0aec0;
+    color: var(--text-secondary);
     font-family: var(--font-text);
+}
+
+.repair-tab-btn.active .tab-badge-sub {
+    color: #f7f4f8;
+    opacity: 0.95;
 }
 
 /* =========================================
@@ -386,32 +488,33 @@
 .shop-stock-pill {
     font-size: 0.8rem;
     font-family: var(--font-mono);
-    background: linear-gradient(180deg, rgba(22, 16, 13, 0.95) 0%, rgba(12, 9, 8, 0.95) 100%);
-    border: 1px solid rgba(197, 160, 89, 0.4);
+    background: var(--surface-subtle);
+    border: 1px solid var(--primary-violet);
     border-radius: 4px;
     padding: 3px 10px;
-    color: #cbd5e0;
+    color: var(--text-secondary);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8);
 }
 
 .shop-stock-pill strong {
-    color: #50fa7b;
+    color: var(--primary-rose);
     font-size: 0.9rem;
-    text-shadow: 0 0 6px rgba(80, 250, 123, 0.4);
 }
 
 .stock-zero {
-    color: #b4202a !important;
-    text-shadow: 0 0 6px rgba(250, 80, 80, 0.4) !important;
+    color: var(--primary-violet) !important;
+}
+
+[data-theme="dark"] .stock-zero {
+    color: var(--primary-light) !important;
 }
 
 .hs-red {
-    background-color: #91050528 !important;
+    background-color: rgba(219, 47, 47, 0.12) !important;
 }
 
 .hs-red:hover {
-    transform: translateY(-1);
+    transform: translateY(-1px);
 }

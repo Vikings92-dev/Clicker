@@ -1,22 +1,22 @@
 /* =========================================
-   ÉCRAN DE VICTOIRE
+   ÉCRAN DE VICTOIRE - THEME ROSE/VIOLET
    ========================================= */
 #victory-screen {
     display: none; /* Affiché dynamiquement en fin de partie */
 }
 
 .victory-box {
-    border-color: #50fa7b;
-    box-shadow: 0 10px 35px rgba(80, 250, 123, 0.4);
+    border-color: var(--primary-rose);
+    box-shadow: 0 10px 35px rgba(183, 115, 195, 0.4);
 }
 
 .victory-title {
-    color: #50fa7b;
+    color: var(--primary-rose);
 }
 
 #final-money {
     font-size: 1.2rem;
-    color: #ffb86c;
+    color: var(--primary-violet);
     font-weight: bold;
     margin: 15px 0;
 }

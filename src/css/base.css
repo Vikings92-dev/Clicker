@@ -1,22 +1,57 @@
 /* =========================================
-   VARIABLES DU THÈME CHRONOS
+   VARIABLES DU THÈME CHRONOS - NOUVELLE PALETTE ROSE/VIOLET
    ========================================= */
 :root {
-    --copper-light: #d97b48;
-    --copper-main: #b85d19;
-    --copper-dark: #7a3a0d;
-    --brass: #c5a059;
-    --text-main: #e8dcc4;
-    --text-dark: #1a1614;
+    /* Palette principale - Rose et Violet */
+    --primary-rose: #b773c3;                 /* Rose principal */
+    --primary-violet: #840b96;                /* Violet principal */
+    --primary-light: #dcaaf3;                 /* Violet clair */
 
-    /* Effet verre fumé (Glassmorphism) */
-    --panel-glass-light: rgba(30, 25, 22, 0.75);
-    --panel-glass-dark: rgba(15, 12, 10, 0.85);
-    --panel-border: rgba(197, 160, 89, 0.25);
+    /* Fond et arrière-plans (Mode Clair) */
+    --background-main: #f7f4f8;               /* Blanc doux */
+    --background-alt: #ece5eb;                /* Fond secondaire */
+    --panel-bg: rgba(247, 244, 248, 0.95);   /* Panneau translucide */
+    --surface-card: rgba(255, 255, 255, 0.6); /* Cartes internes */
+    --surface-subtle: rgba(247, 244, 248, 0.75); /* Encarts discrets */
 
+    /* Textes */
+    --text-main: #1a1614;
+    --text-secondary: #5d5366;
+    --text-dark: #0c090b;
+    --text-muted: #8a7f94;
+
+    /* Effet verre fumé */
+    --panel-glass-light: rgba(255, 255, 255, 0.7);
+    --panel-glass-dark: rgba(30, 25, 28, 0.75);
+    --panel-border: #dcaaf3;
+
+    /* Ombres */
+    --shadow-primary: 0 4px 16px rgba(132, 11, 150, 0.15);
+    --shadow-hover: 0 8px 32px rgba(132, 11, 150, 0.25);
+    --shadow-rose: 0 4px 12px rgba(183, 115, 195, 0.2);
+
+    /* Polices */
     --font-title: 'Cinzel', serif;
     --font-text: 'Roboto', sans-serif;
     --font-mono: 'Courier Prime', monospace;
+}
+
+/* MODIF: Variables du Mode Sombre (noirs violacés + rose/violet conservés) */
+[data-theme="dark"] {
+    --background-main: #120e15;
+    --background-alt: #1b1520;
+    --panel-bg: rgba(22, 17, 26, 0.95);
+    --surface-card: rgba(34, 26, 40, 0.8);
+    --surface-subtle: rgba(26, 20, 31, 0.85);
+
+    --text-main: #f3edf5;
+    --text-secondary: #b9adc2;
+    --text-dark: #f7f4f8;
+    --text-muted: #7d7087;
+
+    --panel-glass-light: rgba(28, 21, 33, 0.85);
+    --shadow-primary: 0 4px 18px rgba(0, 0, 0, 0.55);
+    --shadow-hover: 0 8px 32px rgba(183, 115, 195, 0.25);
 }
 
 /* =========================================
@@ -30,7 +65,7 @@
 }
 
 body {
-    background-color: #0f0c0a; /* Fond sombre de secours */
+    background-color: var(--background-main);
     color: var(--text-main);
     font-family: var(--font-text);
     display: flex;
@@ -38,21 +73,33 @@ body {
     overflow: hidden;
 }
 
-/* Image de fond statique */
-#site-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    z-index: -1;
-    pointer-events: none;
-}
-
 h1, h2, h3, h4, .phase-name, .upgrade-title {
     font-family: var(--font-title);
     letter-spacing: 1px;
+    color: var(--primary-violet);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] .phase-name,
+[data-theme="dark"] .upgrade-title,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .vault-title,
+[data-theme="dark"] .craft-title {
+    color: var(--primary-rose);
+}
+
+[data-theme="dark"] .bar-text {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+}
+
+[data-theme="dark"] .btn:disabled {
+    background: #241d29;
+    border-color: #4a3554;
+    color: #7d7087;
 }
 
 /* Classe utilitaire d'effet verre fumé */
@@ -61,9 +108,14 @@ h1, h2, h3, h4, .phase-name, .upgrade-title {
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--panel-border);
     border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-primary);
 }
 
+.modal-hidden {
+    display: none;
+}
+
+/* MODIF: Restauration de la variable --pickaxe-cursor sur tous les éléments */
 *,
 *::before,
 *::after {

@@ -1,5 +1,5 @@
 /* =========================================
-   POPUP DE DÉTECTION D'AUTOCLICKER
+   POPUP DE DÉTECTION D'AUTOCLICKER - THEME ROSE/VIOLET
    ========================================= */
 #autoclicker-popup {
     display: none; /* Affiché dynamiquement en cas de détection */
@@ -8,28 +8,28 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(10, 8, 7, 0.95);
+    background-color: var(--panel-bg);
     justify-content: center;
     align-items: center;
     z-index: 10001;
 }
 
 .autoclicker-box {
-    border-color: #ff5555;
-    box-shadow: 0 10px 35px rgba(255, 85, 85, 0.4);
+    border-color: #d32f2f;
+    box-shadow: 0 10px 35px rgba(219, 47, 47, 0.4);
     max-width: 420px;
     padding: 25px;
 }
 
 .autoclicker-title {
-    color: #ff5555;
+    color: #d32f2f;
     font-size: 1.8rem;
     margin-bottom: 10px;
 }
 
 .autoclicker-text {
     font-size: 0.9rem;
-    color: #a0aec0;
+    color: var(--text-secondary);
     margin-bottom: 20px;
 }
 
@@ -40,14 +40,14 @@
 }
 
 #btn-close-autoclicker {
-    background: linear-gradient(180deg, #b33227 0%, #7a211a 100%);
-    border-color: #ff5555;
+    background: linear-gradient(180deg, #d32f2f 0%, #b71c1c 100%);
+    border-color: #d32f2f;
 }
 
 .autoclicker-warn-badge {
-    background: rgba(255, 85, 85, 0.15);
-    border: 1px solid #ff5555;
-    color: #ffb86c;
+    background: rgba(219, 47, 47, 0.15);
+    border: 1px solid #d32f2f;
+    color: var(--primary-rose);
     font-weight: bold;
     padding: 6px 10px;
     border-radius: 4px;
@@ -58,10 +58,10 @@
 .warn-status-pill {
     margin-top: 8px;
     padding: 4px 10px;
-    background: rgba(255, 85, 85, 0.15);
-    border: 1px solid rgba(255, 85, 85, 0.5);
+    background: rgba(132, 11, 150, 0.15);
+    border: 1px solid var(--primary-violet);
     border-radius: 4px;
-    color: #ff8080;
+    color: var(--primary-rose);
     font-size: 0.8rem;
     font-family: var(--font-mono);
 }
@@ -73,7 +73,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(10, 8, 7, 0.97);
+    background-color: var(--panel-bg);
     justify-content: center;
     align-items: center;
     z-index: 10002;
@@ -81,27 +81,27 @@
 }
 
 .timeout-box {
-    border-color: #ff5555;
-    box-shadow: 0 10px 45px rgba(255, 85, 85, 0.45);
+    border-color: #d32f2f;
+    box-shadow: 0 10px 45px rgba(219, 47, 47, 0.45);
     max-width: 460px;
     padding: 30px;
 }
 
 .timeout-title {
-    color: #ff5555;
+    color: #d32f2f;
     font-size: 1.7rem;
     margin-bottom: 10px;
 }
 
 .timeout-subtitle {
-    color: #e8dcc4;
+    color: var(--text-secondary);
     font-size: 0.95rem;
     margin-bottom: 18px;
 }
 
 .timeout-timer-card {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--brass);
+    background: var(--surface-card);
+    border: 1px solid var(--primary-violet);
     border-radius: 6px;
     padding: 15px;
     margin-bottom: 18px;
@@ -109,7 +109,7 @@
 
 .timeout-timer-label {
     font-size: 0.8rem;
-    color: #a0aec0;
+    color: var(--text-secondary);
     margin-bottom: 6px;
 }
 
@@ -117,12 +117,12 @@
     font-family: var(--font-mono);
     font-size: 1.9rem;
     font-weight: bold;
-    color: #ffb86c;
-    text-shadow: 0 0 10px rgba(255, 184, 108, 0.4);
+    color: var(--primary-rose);
+    text-shadow: 0 0 10px rgba(183, 115, 195, 0.4);
 }
 
 .timeout-note {
     font-size: 0.82rem;
-    color: #8c8c96;
+    color: var(--text-secondary);
     margin-bottom: 0;
 }
