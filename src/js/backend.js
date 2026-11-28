@@ -390,3 +390,30 @@ export async function submitCaptchaToServer() {
     if (btn) btn.innerText = "Échec de la vérification, réessayez";
     if (window.turnstile) window.turnstile.reset('#cf-turnstile-container');
 }
+
+function initChronosSession() {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = hashParams.get('token') || urlParams.get('token');
+
+    if (tokenFromUrl) {
+        AUTH_TOKEN = tokenFromUrl;
+        sessionStorage.setItem('chronos_clicker_token', tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        AUTH_TOKEN = sessionStorage.getItem('chronos_clicker_token') || "";
+    }
+
+    if (!AUTH_TOKEN) {
+        showChronosRedirectScreen();
+        return;
+    }
+
+    loadGameFromServer();
+}
+
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', initChronosSession);
+} else {
+    initChronosSession();
+}

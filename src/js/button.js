@@ -1,5 +1,5 @@
 import { buyDrillGlobalBtn, buyKitBtn, buyKitQtyInput, buyMatBtn, buyMatQtyInput, buyMatTypeSelect, buyModElecBtn, buyModElecQtyInput, buyModSolidBtn, buyModSolidQtyInput, clickBtn, game, researchDrillBtn, upgradePickaxeBtn } from './state.js';
-import { checkClickLoot, getGlobalDrillCost, isGameFinished, isPurchaseOnCooldown, isSuspendedByCaptcha, openRepairModal, openShopModal, refreshShopMatSelect, triggerAutoclickerAlert, triggerPurchaseCooldown, updateCosts, updatePickaxeCursor, updateUI } from './function.js';
+import { checkClickLoot, getGlobalDrillCost, isGameFinished, isPurchaseOnCooldown, isSuspendedByCaptcha, openRepairModal, openShopModal, refreshShopMatSelect, showToast, triggerAutoclickerAlert, triggerPurchaseCooldown, updateCosts, updatePickaxeCursor, updateUI } from './function.js';
 import { checkRandomClickEvent, getClickMultiplier } from './event.js';
 import { saveGameToServer } from './backend.js';
 
@@ -165,9 +165,9 @@ researchDrillBtn.addEventListener('click', async () => {
         if (roll <= chance) {
             game.unlockedDrillTier++;
             if (typeof refreshShopMatSelect === 'function') refreshShopMatSelect();
-            alert(`🎉 Succès ! Vous avez débloqué les technologies pour fabriquer : ${game.drillTemplates[game.unlockedDrillTier].name} !`);
+            showToast(`🎉 Succès ! Vous avez débloqué les technologies pour fabriquer : ${game.drillTemplates[game.unlockedDrillTier].name} !`);
         } else {
-            alert(`❌ Échec de la recherche ! Les prototypes ont explosé. Vos scientifiques demandent de nouveaux fonds pour retenter (${roll}/100 requis <= ${chance}).`);
+            showToast(`❌ Échec de la recherche ! Les prototypes ont explosé. Vos scientifiques demandent de nouveaux fonds pour retenter (${roll}/100 requis <= ${chance}).`);
         }
         
         updateUI();

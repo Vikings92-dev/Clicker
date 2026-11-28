@@ -254,13 +254,13 @@ export function renderDeploymentGrid() {
 
 export function openDeploymentMenu(phaseId) {
     if (game.inventory.length === 0) {
-        alert("Votre hangar est vide.");
+        showToast("Votre hangar est vide.");
         return;
     }
 
     const deployableDrills = game.inventory.filter(d => !d.isHS);
     if (deployableDrills.length === 0) {
-        alert("Toutes vos foreuses en stock sont en panne (HS). Réparez-les d'abord dans l'Atelier de Réparation.");
+        showToast("Toutes vos foreuses en stock sont en panne (HS). Réparez-les d'abord dans l'Atelier de Réparation.");
         return;
     }
 
@@ -330,7 +330,7 @@ export function confirmDeploySelectedDrills() {
     if (!phase) return;
 
     if (selectedDrillUids.size === 0) {
-        alert("Veuillez sélectionner au moins un drill à déployer.");
+        showToast("Veuillez sélectionner au moins un drill à déployer.");
         return;
     }
 
@@ -1075,7 +1075,7 @@ export function installSelectedModules(drillUid) {
     if (chkSolid && chkSolid.checked) selectedModules.push('solidite');
 
     if (selectedModules.length === 0) {
-        alert("Veuillez cocher au moins un module à installer.");
+        showToast("Veuillez cocher au moins un module à installer.");
         return;
     }
 
@@ -1085,7 +1085,7 @@ export function installSelectedModules(drillUid) {
 
     const toInstall = selectedModules.filter(m => !drill.modules[m]);
     if (toInstall.length === 0) {
-        alert(`${drill.name} possède déjà les modules cochés.`);
+        showToast(`${drill.name} possède déjà les modules cochés.`);
         return;
     }
 
@@ -1096,7 +1096,7 @@ export function installSelectedModules(drillUid) {
     const missing = toInstall.filter(m => (game.modulesStock[m] || 0) <= 0);
     if (missing.length > 0) {
         const names = missing.map(m => game.moduleTemplates[m].name).join(', ');
-        alert(`Stock insuffisant pour : ${names}. Achetez-en dans le Magasin.`);
+        showToast(`Stock insuffisant pour : ${names}. Achetez-en dans le Magasin.`);
         return;
     }
 
@@ -1106,7 +1106,7 @@ export function installSelectedModules(drillUid) {
     });
 
     const installedNames = toInstall.map(m => game.moduleTemplates[m].name).join(' + ');
-    alert(`⚙️ ${installedNames} installé(s) à vie sur ${drill.name} !`);
+    showToast(`⚙️ ${installedNames} installé(s) à vie sur ${drill.name} !`);
 
     renderRepairGrid();
     updateUI();
@@ -1115,7 +1115,7 @@ export function installSelectedModules(drillUid) {
 
 export function applyHsRepair(drillUid, chance) {
     if (!game.repairKits || game.repairKits <= 0) {
-        alert("Vous n'avez plus de Caisse à outils disponible.");
+        showToast("Vous n'avez plus de Caisse à outils disponible.");
         return;
     }
 
@@ -1127,9 +1127,9 @@ export function applyHsRepair(drillUid, chance) {
 
     if (roll <= chance) {
         drill.isHS = false;
-        alert(`🎉 Dépannage réussi sur ${drill.name} ! Il est de nouveau opérationnel.`);
+        showToast(`🎉 Dépannage réussi sur ${drill.name} ! Il est de nouveau opérationnel.`);
     } else {
-        alert(`❌ Échec du dépannage sur ${drill.name} (${roll}/100 > ${chance}% requis). Le kit a été consommé.`);
+        showToast(`❌ Échec du dépannage sur ${drill.name} (${roll}/100 > ${chance}% requis). Le kit a été consommé.`);
     }
 
     renderRepairGrid();
@@ -1143,7 +1143,7 @@ export function applyDuraRepair(drillUid, chance) {
 
     const drillTier = drill.tier !== undefined ? drill.tier : 0;
     if (!game.repairMateriaux || (game.repairMateriaux[drillTier] || 0) <= 0) {
-        alert(`Vous n'avez pas de Matériau de réparation Tier ${drillTier} pour réparer ${drill.name}. Vous pouvez en acheter au Magasin.`);
+        showToast(`Vous n'avez pas de Matériau de réparation Tier ${drillTier} pour réparer ${drill.name}. Vous pouvez en acheter au Magasin.`);
         return;
     }
 
@@ -1153,9 +1153,9 @@ export function applyDuraRepair(drillUid, chance) {
     if (roll <= chance) {
         const healAmount = drill.maxDura * 0.5; // Gain fixe de 50%
         drill.dura = Math.min(drill.maxDura, drill.dura + healAmount);
-        alert(`🎉 Réparation réussie sur ${drill.name} ! (+${Math.ceil(healAmount)} durabilité)`);
+        showToast(`🎉 Réparation réussie sur ${drill.name} ! (+${Math.ceil(healAmount)} durabilité)`);
     } else {
-        alert(`❌ Échec de la réparation sur ${drill.name} (${roll}/100 > ${chance}% requis). Le matériau a été consommé.`);
+        showToast(`❌ Échec de la réparation sur ${drill.name} (${roll}/100 > ${chance}% requis). Le matériau a été consommé.`);
     }
 
     renderRepairGrid();
@@ -1165,7 +1165,7 @@ export function applyDuraRepair(drillUid, chance) {
 
 export function applyUniversalRepair(drillUid) {
     if (!game.universalRepairs || game.universalRepairs <= 0) {
-        alert("Vous n'avez aucune Réparation Universelle en stock.");
+        showToast("Vous n'avez aucune Réparation Universelle en stock.");
         return;
     }
 
@@ -1173,14 +1173,14 @@ export function applyUniversalRepair(drillUid) {
     if (!drill) return;
 
     if (drill.dura >= drill.maxDura) {
-        alert(`${drill.name} a déjà 100% de durabilité !`);
+        showToast(`${drill.name} a déjà 100% de durabilité !`);
         return;
     }
 
     game.universalRepairs--;
     drill.dura = drill.maxDura;
 
-    alert(`✨ Réparation Universelle réussie sur ${drill.name} ! Durabilité restaurée à 100%.`);
+    showToast(`✨ Réparation Universelle réussie sur ${drill.name} ! Durabilité restaurée à 100%.`);
 
     renderRepairGrid();
     updateUI();
@@ -1193,7 +1193,7 @@ export function craftRepairKit(qty = 1) {
     const totalCost = requestedQty * COST_PER_KIT;
 
     if ((game.craftParts || 0) < totalCost) {
-        alert(`Vous n'avez pas assez de pièces mécaniques (${totalCost} requises pour ${requestedQty} caisse(s), possédées : ${game.craftParts || 0}).`);
+        showToast(`Vous n'avez pas assez de pièces mécaniques (${totalCost} requises pour ${requestedQty} caisse(s), possédées : ${game.craftParts || 0}).`);
         return;
     }
 
@@ -1208,7 +1208,7 @@ export function craftRepairKit(qty = 1) {
 export function craftRepairKitMax() {
     const maxQty = Math.floor((game.craftParts || 0) / 5);
     if (maxQty <= 0) {
-        alert("Vous n'avez pas assez de pièces mécaniques (minimum 5 requises pour fabriquer une caisse).");
+        showToast("Vous n'avez pas assez de pièces mécaniques (minimum 5 requises pour fabriquer une caisse).");
         return;
     }
     craftRepairKit(maxQty);
@@ -1311,4 +1311,27 @@ export function toogleStockZeroStyle(elementId, stock) {
     } else {
         element.classList.remove('stock-zero');
     }
+}
+
+export function showToast(message, type = 'warning', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `game-toast game-toast--${type}`;
+    toast.innerHTML = `
+        <span class="game-toast-msg">${message}</span>
+        <span class="game-toast-close">✕</span>
+    `;
+
+    const dismiss = () => {
+        if (toast.classList.contains('is-hiding')) return;
+        toast.classList.add('is-hiding');
+        setTimeout(() => toast.remove(), 220);
+    };
+
+    toast.addEventListener('click', dismiss);
+    container.appendChild(toast);
+
+    setTimeout(dismiss, duration);
 }
